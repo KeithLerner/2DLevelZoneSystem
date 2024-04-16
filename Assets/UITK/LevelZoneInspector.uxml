@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:Vector2Field label="Size" name="Size" x="32" y="32" binding-path="size" class="unity-base-field__aligned" />
+    <ui:Foldout text="Behavior" name="BehaviorFoldout" binding-path="m_BehaviorFoldout" class="unity-base-field__aligned">
+        <ui:EnumField label="Enum" type="LevelZone+ScrollDirection, Assembly-CSharp" name="ScrollDirection" value="NoScroll" tooltip="Which direction the room will scroll in." binding-path="scrollDirection" class="unity-base-field__aligned" />
+        <ui:FloatField label="Camera Offset" value="0" name="CameraOffset" tooltip="How far from zero the camera should align on the axis opposite scrolling direction." binding-path="camOffset" class="unity-base-field__aligned" />
+        <ui:Toggle label="Force Edge Centers" name="ForceEdgeCenters" binding-path="forceEdgeCenters" tooltip="Forces the camera to transition to the edge of the level zone. When false, the choice is left up to the level zone entrances. Alternative behavior results in the camera transitioning to the nearest edge of the level zone." />
+    </ui:Foldout>
+    <ui:Foldout text="Debug" name="DebugFoldout" binding-path="m_DebugFoldout" class="unity-base-field__aligned">
+        <ui:Toggle label="Draw Zone" name="DrawZone" value="true" tooltip="Draws debug visuals to the scene view." binding-path="drawZone" class="unity-base-field__aligned" />
+        <uie:ColorField label="Level Zone Color" value="#FFFFFF40" name="LevelZoneColor" show-alpha="false" tooltip="Color of the level zone area. Will revert to default values at FFFFFF." binding-path="overrideLevelZoneColor" class="unity-base-field__aligned" />
+    </ui:Foldout>
+</ui:UXML>
