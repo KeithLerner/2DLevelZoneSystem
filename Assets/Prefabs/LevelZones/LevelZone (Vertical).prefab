@@ -78,7 +78,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 18, y: 32}
+  m_Size: {x: 32, y: 32}
   m_EdgeRadius: 0
 --- !u!114 &8787987148728087346
 MonoBehaviour:
@@ -92,11 +92,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42a994f4f209eb940aec4a4974314543, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <Size>k__BackingField: {x: 18, y: 32}
-  <DrawRoom>k__BackingField: 1
-  overrideLevelZoneColor: {r: 1, g: 1, b: 1, a: 0.25}
   scrollDirection: 1
   camOffset: 0
+  forceEdgeCenters: 1
+  size: {x: 32, y: 32}
+  drawZone: 1
+  overrideLevelZoneColor: {r: 1, g: 1, b: 1, a: 0.25}
   bColl: {fileID: 2232592529893193840}
 --- !u!1001 &564726826946914863
 PrefabInstance:
@@ -116,7 +117,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 13a4e285053569849951b286f490507d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -20.5
+      value: -23.5
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 13a4e285053569849951b286f490507d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -178,7 +179,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 13a4e285053569849951b286f490507d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 20.5
+      value: 23.5
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 13a4e285053569849951b286f490507d, type: 3}
       propertyPath: m_LocalPosition.z

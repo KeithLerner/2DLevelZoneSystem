@@ -5,8 +5,6 @@ using UnityEngine;
 [RequireComponent(typeof(BoxCollider2D))]
 public class LevelZoneEntrance : MonoBehaviour
 {
-    private const float lineWidth = 8;
-    
     [field: Header("Bounds")]
     [field: SerializeField] public Vector2 Size { get; private set; } = Vector2.one;
     [field: SerializeField] public bool TransitionToEdgeCenter { get; private set; } = true; 
@@ -170,7 +168,7 @@ public class LevelZoneEntrance : MonoBehaviour
                 
                 // Draw line to next camera point
                 Handles.color = owningZone.LevelZoneColor;
-                Handles.DrawAAPolyLine(lineWidth, pos, transitionPos);
+                Handles.DrawAAPolyLine(owningZone.LineWidth, pos, transitionPos);
             }
             
             // Round position to camera bounds

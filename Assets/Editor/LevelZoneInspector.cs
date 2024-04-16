@@ -1,4 +1,5 @@
 using UnityEditor;
+using UnityEditor.TerrainTools;
 using UnityEngine.UIElements;
 
 [CustomEditor(typeof(LevelZone))]
@@ -16,5 +17,11 @@ public class LevelZoneInspector : Editor
 
         // Return the finished Inspector UI.
         return rootElement;
+    }
+
+    public override void OnInspectorGUI()
+    {
+        // == Hide cam offset if not supported by current scroll direction ==
+        base.OnInspectorGUI();
     }
 }

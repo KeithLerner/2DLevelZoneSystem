@@ -1,17 +1,20 @@
 using System;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(BoxCollider2D))]
 public class LevelZone : MonoBehaviour
 {
+    public float LineWidth => 8;
+    
     public enum ScrollDirection { Horizontal, Vertical, FollowPlayer, NoScroll }
     [Header("Behavior")]
     [Tooltip("Which direction the room will scroll in.")]
     public ScrollDirection scrollDirection;
     [Tooltip("How far from zero the camera should align on the axis opposite scrolling direction.")]
-    [SerializeField] private int camOffset;
+    [SerializeField] private float camOffset;
     [Tooltip("Forces cameras to lock to edge centers when leaving the level zone.")] 
     [SerializeField] private bool forceEdgeCenters = false;
     public bool ForceEdgeCenters => forceEdgeCenters;
@@ -213,6 +216,25 @@ public class LevelZone : MonoBehaviour
         
         Gizmos.color = LevelZoneColor;
         Gizmos.DrawCube(transform.position, (Vector3)bColl.size);
+
+        Handles.color = Color.white;
+        Bounds bCollBounds = bColl.bounds;
+        switch (scrollDirection)
+        {
+            case ScrollDirection.Horizontal:
+                Handles.DrawAAPolyLine(LineWidth, 
+                    bCollBounds.center + Vector3.up * camOffset - Vector3.right * bCollBounds.extents.x, 
+                    bCollBounds.center + Vector3.up * camOffset + Vector3.right * bCollBounds.extents.x);
+                break;
+            
+            case ScrollDirection.Vertical:
+                Handles.DrawAAPolyLine(LineWidth, 
+                    bCollBounds.center + Vector3.right * camOffset - Vector3.up * bCollBounds.extents.y, 
+                    bCollBounds.center + Vector3.right * camOffset + Vector3.up * bCollBounds.extents.y);
+                break;
+            
+            default: break;
+        }
     }
 
     public void DrawGizmosSelected() => OnDrawGizmosSelected();
