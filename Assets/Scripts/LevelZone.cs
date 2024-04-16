@@ -17,11 +17,7 @@ public class LevelZone : MonoBehaviour
     public bool ForceEdgeCenters => forceEdgeCenters;
     
     // == Sizing ==
-    public Vector2 Size
-    {
-        get => size;
-        set => size = value;
-    }
+    public Vector2 Size => size;
     [SerializeField] private Vector2 size = new Vector2(32, 32);
     float ScreenAspect => (float)Screen.width / (float)Screen.height;
     float CameraHeight => Camera.main.orthographicSize * 2;
@@ -154,17 +150,17 @@ public class LevelZone : MonoBehaviour
 
     public Vector2 GetNearestEdgePoint(Vector2 targetPosition)
     {
-        if (IsInsideLevelZone(targetPosition)) return Vector2.zero;
-        
         // Get min and max bounding position
         Bounds bCollBounds = bColl.bounds;
-        Vector2 pos = transform.position;
+        Vector2 pos = bCollBounds.center;
         Vector3 extents = bCollBounds.extents;
-
+        float clampedX;
+        float clampedY;
+        
         // Clamp the specified point to the boundaries of the box
-        float clampedX = Mathf.Clamp(targetPosition.x, pos.x - extents.x, pos.x + extents.x);
-        float clampedY = Mathf.Clamp(targetPosition.y, pos.y - extents.y, pos.y + extents.y);
-
+        clampedX = Mathf.Clamp(targetPosition.x, pos.x - extents.x, pos.x + extents.x);
+        clampedY = Mathf.Clamp(targetPosition.y, pos.y - extents.y, pos.y + extents.y);
+        
         // Return the clamped point as the nearest edge point
         return new Vector2(clampedX, clampedY);
     }
@@ -187,22 +183,24 @@ public class LevelZone : MonoBehaviour
                 new Vector2(laPos.x + camOffset, pPos.y),
             
             ScrollDirection.FollowPlayer =>
-                new Vector2(pPos.x + camOffset, pPos.y),
+                new Vector2(pPos.x, pPos.y),
             
             // This level zone does not scroll
             _ => new Vector2(laPos.x, laPos.y),
         };
-        targetCamPos.z = cPos.z;
 
         // Set camera to target position if not in zone bounds already
+        Vector3 newCamPos = targetCamPos;
         bool isInside = IsInsideLevelZone(other.transform.position);
-        Vector3 transitionCamPos = forceEdgeCenters ? 
-            GetNearestEdgeCenter(laPos) :
-            GetNearestEdgePoint(laPos);
-        transitionCamPos.z = cPos.z;
+        if (!isInside)
+        {
+            newCamPos = forceEdgeCenters ? 
+                GetNearestEdgeCenter(pPos) :
+                GetNearestEdgePoint(pPos);
+        }
+        newCamPos.z = cPos.z;
         camTransform.position = Vector3.Lerp(
-            cPos,
-            isInside ? targetCamPos : transitionCamPos, 
+            cPos, newCamPos, 
             Time.fixedDeltaTime * (isInside ? 10 : 25)
         );
     }
