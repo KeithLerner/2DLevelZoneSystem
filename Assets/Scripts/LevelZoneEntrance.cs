@@ -54,15 +54,15 @@ public class LevelZoneEntrance : MonoBehaviour
 
         // Round the position to the nearest edge
         // If near to left or right edge
-        if (Mathf.Abs(distLeft) < .001f ||
-            Mathf.Abs(distRight) < .001f)
+        if (Mathf.Abs(distLeft) < extents.x ||
+            Mathf.Abs(distRight) < extents.x)
         {
             axes[0] = Vector3.up;
         }
         
         // If near to top or bottom edge
-        if (Mathf.Abs(distTop) < .001f ||
-            Mathf.Abs(distBottom) < .001f)
+        if (Mathf.Abs(distTop) < extents.y ||
+            Mathf.Abs(distBottom) < extents.y)
         {
             axes[1] = Vector3.right;
         }
@@ -145,7 +145,7 @@ public class LevelZoneEntrance : MonoBehaviour
         edgePoint.z = camTransform.position.z;
         camTransform.position = edgePoint;
         
-        // Transition player (Doesn't work yet)
+        // Transition player (NOT IMPLEMENTED YET)
         //StartCoroutine(nameof(TransitionPlayer));
     }
 

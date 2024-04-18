@@ -49,19 +49,21 @@ public class LevelZoneInspector : UnityEditor.Editor
             // Get a level zone entrance position
             Vector3 lzePos = lze.transform.position;
             
+            // Track position influence
+            Vector3 endLzePos = lzePos;
+            
             // Get valid movement axis
             Vector3[] dirs = lze.GetValidMovementAxes();
-            
+
             // Draw handles using dirs
             for (var i = 0; i < dirs.Length; i++)
             {
-                if (Vector3.Angle(dirs[i], Vector3.zero) > 1)
-                {
-                    continue;
-                }
-                
                 // Set handles color
-                if (Vector3.Angle(dirs[i], Vector3.up) < 1)
+                if (dirs[i].magnitude == 0)
+                {
+                    UnityEditor.Handles.color = Color.clear;
+                }
+                else if (Vector3.Angle(dirs[i], Vector3.up) < 1)
                 {
                     UnityEditor.Handles.color = Color.green;
                 }
@@ -69,7 +71,7 @@ public class LevelZoneInspector : UnityEditor.Editor
                 {
                     UnityEditor.Handles.color = Color.red;
                 }
-                else // Shouldn't happen
+                else // Shouldn't happen, magenta indicates error
                 {
                     UnityEditor.Handles.color = Color.magenta;
                 }
@@ -83,13 +85,15 @@ public class LevelZoneInspector : UnityEditor.Editor
                 {
                     dirs[i].y *= -1;
                 }
-                
-                // Draw handle linked to position
-                lze.transform.position = 
-                    UnityEditor.Handles.Slider(lzePos, dirs[i]);
+
+                // Draw handle and add influence to end position
+                endLzePos += UnityEditor.Handles.Slider(lzePos, dirs[i]) - lzePos;
             }
+
+            // Set new level zone entrance position to calculated end position 
+            lze.transform.position = endLzePos;
             
-            // Round position
+            // Round level zone entrance position to owning level zone's camera bounds
             lze.RoundPositionToOwningCameraBounds();
         }
     }
