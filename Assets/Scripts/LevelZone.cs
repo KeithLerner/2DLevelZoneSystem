@@ -1,8 +1,4 @@
-using System;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
-using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(BoxCollider2D))]
 public class LevelZone : MonoBehaviour
@@ -42,7 +38,12 @@ public class LevelZone : MonoBehaviour
                 ScrollDirection.Vertical => new Color(1, .2f, .2f, colorAlpha),
                 ScrollDirection.FollowPlayer => new Color(.2f, 1, .2f, colorAlpha),
                 _ => new Color(.2f, .2f, .2f, colorAlpha)
-            }; 
+            };
+
+    public static bool DoesCameraOffset(ScrollDirection _scrollDirection)
+    {
+        return _scrollDirection == ScrollDirection.Horizontal || _scrollDirection == ScrollDirection.Vertical;
+    }
 
     public BoxCollider2D bColl;
     private GameObject playerGO;
@@ -208,6 +209,7 @@ public class LevelZone : MonoBehaviour
         );
     }
 
+#if UNITY_EDITOR
     private void OnDrawGizmos()
     {
         if (!DrawLevelZone) return;
@@ -217,18 +219,18 @@ public class LevelZone : MonoBehaviour
         Gizmos.color = LevelZoneColor;
         Gizmos.DrawCube(transform.position, (Vector3)bColl.size);
 
-        Handles.color = Color.white;
+        UnityEditor.Handles.color = Color.white;
         Bounds bCollBounds = bColl.bounds;
         switch (scrollDirection)
         {
             case ScrollDirection.Horizontal:
-                Handles.DrawAAPolyLine(LineWidth, 
+                UnityEditor.Handles.DrawAAPolyLine(LineWidth, 
                     bCollBounds.center + Vector3.up * camOffset - Vector3.right * bCollBounds.extents.x, 
                     bCollBounds.center + Vector3.up * camOffset + Vector3.right * bCollBounds.extents.x);
                 break;
             
             case ScrollDirection.Vertical:
-                Handles.DrawAAPolyLine(LineWidth, 
+                UnityEditor.Handles.DrawAAPolyLine(LineWidth, 
                     bCollBounds.center + Vector3.right * camOffset - Vector3.up * bCollBounds.extents.y, 
                     bCollBounds.center + Vector3.right * camOffset + Vector3.up * bCollBounds.extents.y);
                 break;
@@ -247,4 +249,5 @@ public class LevelZone : MonoBehaviour
         Gizmos.DrawWireCube(transform.position, Size + CameraSize);
         Gizmos.color = Color.clear;
     }
+#endif
 }

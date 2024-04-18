@@ -1,5 +1,3 @@
-using System;
-using UnityEditor;
 using UnityEngine;
 
 [RequireComponent(typeof(BoxCollider2D))]
@@ -167,8 +165,8 @@ public class LevelZoneEntrance : MonoBehaviour
                 Gizmos.DrawCube(transform.position, bColl.size);
                 
                 // Draw line to next camera point
-                Handles.color = owningZone.LevelZoneColor;
-                Handles.DrawAAPolyLine(owningZone.LineWidth, pos, transitionPos);
+                UnityEditor.Handles.color = owningZone.LevelZoneColor;
+                UnityEditor.Handles.DrawAAPolyLine(owningZone.LineWidth, pos, transitionPos);
             }
             
             // Round position to camera bounds
