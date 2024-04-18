@@ -94,11 +94,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42a994f4f209eb940aec4a4974314543, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <Size>k__BackingField: {x: 32, y: 32}
-  <DrawRoom>k__BackingField: 1
-  overrideLevelZoneColor: {r: 1, g: 1, b: 1, a: 0.25}
   scrollDirection: 3
   camOffset: 0
+  forceEdgeCenters: 0
+  size: {x: 32, y: 32}
+  drawZone: 1
+  overrideLevelZoneColor: {r: 1, g: 1, b: 1, a: 0.4}
   bColl: {fileID: 5855964219009992464}
 --- !u!1001 &1152958117608519244
 PrefabInstance:
@@ -114,7 +115,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 8448ad6083365fe4cabf42e32cad5066, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 23.5
+      value: 28.315685
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 8448ad6083365fe4cabf42e32cad5066, type: 3}
       propertyPath: m_LocalPosition.y
@@ -176,7 +177,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 8448ad6083365fe4cabf42e32cad5066, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -23.5
+      value: -28.315685
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 8448ad6083365fe4cabf42e32cad5066, type: 3}
       propertyPath: m_LocalPosition.y
@@ -242,7 +243,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 13a4e285053569849951b286f490507d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -20.5
+      value: -23.5
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 13a4e285053569849951b286f490507d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -304,7 +305,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 13a4e285053569849951b286f490507d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 20.5
+      value: 23.5
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 13a4e285053569849951b286f490507d, type: 3}
       propertyPath: m_LocalPosition.z

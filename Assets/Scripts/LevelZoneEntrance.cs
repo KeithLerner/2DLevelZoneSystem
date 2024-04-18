@@ -31,12 +31,18 @@ public class LevelZoneEntrance : MonoBehaviour
         if (camTransform == null)
             camTransform = Camera.main?.transform;
 
+        if (transform.parent == null || (transform.parent != null && transform.parent.GetComponent<LevelZone>() == null))
+            Debug.LogWarning($"Level Zone Entrance attached to \"{gameObject.name}\" does not have a parent level zone. " +
+                             $"Null reference exceptions will occur.");
+        
         if (owningZone == null)
             owningZone = transform.parent.GetComponent<LevelZone>();
     }
 
     public Vector3[] GetValidMovementAxes()
     {
+        if (bColl == null || owningZone == null) Start();
+        
         // Start new Vector3[]
         Vector3[] axes = new Vector3[2];
         
@@ -100,7 +106,7 @@ public class LevelZoneEntrance : MonoBehaviour
         {
             pos = new Vector2(pos.x, min.y);
         }
-        else // minDist == distTop
+        else // Mathf.Abs(minDist - distTop) < .001f
         {
             pos = new Vector2(pos.x, max.y);
         }

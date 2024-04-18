@@ -97,7 +97,7 @@ MonoBehaviour:
   forceEdgeCenters: 1
   size: {x: 32, y: 32}
   drawZone: 1
-  overrideLevelZoneColor: {r: 1, g: 1, b: 1, a: 0.25}
+  overrideLevelZoneColor: {r: 1, g: 1, b: 1, a: 0.4}
   bColl: {fileID: 9144759013441225812}
 --- !u!1001 &993575231508383172
 PrefabInstance:

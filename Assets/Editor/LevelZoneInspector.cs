@@ -9,15 +9,15 @@ public class LevelZoneInspector : UnityEditor.Editor
 {
     public VisualTreeAsset uxml;
     private VisualElement rootElement;
-    private EnumField ef;
-    private FloatField ff;
+    private EnumField scrollDirectionEnumField;
+    private FloatField cameraOffsetFloatField;
 
-    private LevelZone lz;
+    private LevelZone targetLevelZone;
 
     public override VisualElement CreateInspectorGUI()
     {
         // Get target as level zone.
-        lz = target as LevelZone;
+        targetLevelZone = target as LevelZone;
         
         // Create a new VisualElement to be the root of our Inspector UI.
         rootElement = new VisualElement();
@@ -26,13 +26,13 @@ public class LevelZoneInspector : UnityEditor.Editor
         uxml.CloneTree(rootElement);
         
         // Hide cam offset if not supported by current scroll direction
-        ef = rootElement.Q<EnumField>("ScrollDirection");
-        ff = rootElement.Q<FloatField>("CameraOffset");
+        scrollDirectionEnumField = rootElement.Q<EnumField>("ScrollDirection");
+        cameraOffsetFloatField = rootElement.Q<FloatField>("CameraOffset");
         
-        ef.RegisterCallback<ChangeEvent<string>>(evt =>
+        scrollDirectionEnumField.RegisterCallback<ChangeEvent<string>>(evt =>
         {
             LevelZone.ScrollDirection.TryParse(evt.newValue, out LevelZone.ScrollDirection valueInt);
-            ff.visible = LevelZone.DoesCameraOffset(valueInt);
+            cameraOffsetFloatField.visible = LevelZone.DoesCameraOffset(valueInt);
         });
 
         // Return the finished Inspector UI.
@@ -41,10 +41,16 @@ public class LevelZoneInspector : UnityEditor.Editor
 
     private void OnSceneGUI()
     {
-        // Get level zone position 
-        Vector3 pos = lz.transform.position;
+        // Get level zone if null
+        if (targetLevelZone == null)
+        {
+            targetLevelZone = target as LevelZone;
+        }
         
-        foreach (LevelZoneEntrance lze in lz.transform.GetComponentsInChildren<LevelZoneEntrance>())
+        // Get level zone position 
+        Vector3 pos = targetLevelZone.transform.position;
+        
+        foreach (LevelZoneEntrance lze in targetLevelZone.transform.GetComponentsInChildren<LevelZoneEntrance>())
         {
             // Get a level zone entrance position
             Vector3 lzePos = lze.transform.position;

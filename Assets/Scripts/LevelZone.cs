@@ -11,6 +11,19 @@ public class LevelZone : MonoBehaviour
     public ScrollDirection scrollDirection;
     [Tooltip("How far from zero the camera should align on the axis opposite scrolling direction.")]
     [SerializeField] private float camOffset;
+
+    public Vector2 CamOffset
+    {
+        get
+        {
+            return scrollDirection switch
+            {
+                ScrollDirection.Horizontal => Vector2.up    * camOffset,
+                ScrollDirection.Vertical   => Vector2.right * camOffset,
+                _                          => Vector2.zero
+            };
+        }
+    }
     [Tooltip("Forces cameras to lock to edge centers when leaving the level zone.")] 
     [SerializeField] private bool forceEdgeCenters = false;
     public bool ForceEdgeCenters => forceEdgeCenters;
@@ -21,10 +34,10 @@ public class LevelZone : MonoBehaviour
     float ScreenAspect => (float)Screen.width / (float)Screen.height;
     float CameraHeight => Camera.main.orthographicSize * 2;
     public Vector2 CameraSize => new Vector2(CameraHeight * ScreenAspect, CameraHeight);
-    public Bounds CameraBounds => new Bounds(transform.position, Size + CameraSize);
+    public Bounds CameraBounds => new Bounds(transform.position + (Vector3)CamOffset, Size + CameraSize);
 
 
-    private const float colorAlpha = .34f; 
+    private const float colorAlpha = .4f; 
     public bool DrawLevelZone => drawZone;
     [field: Header("Visualization")]
     [SerializeField] private bool drawZone = true;
@@ -246,7 +259,7 @@ public class LevelZone : MonoBehaviour
         
         // Draw camera frame bounds from zone
         Gizmos.color = Color.black;
-        Gizmos.DrawWireCube(transform.position, Size + CameraSize);
+        Gizmos.DrawWireCube(transform.position + (Vector3)CamOffset, Size + CameraSize);
         Gizmos.color = Color.clear;
     }
 #endif
