@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(BoxCollider2D))]
 public class LevelZone : MonoBehaviour
@@ -37,10 +38,17 @@ public class LevelZone : MonoBehaviour
     public Bounds CameraBounds => new Bounds(transform.position + (Vector3)CamOffset, Size + CameraSize);
 
 
+    // == Debug ==
     private const float colorAlpha = .4f; 
     public bool DrawLevelZone => drawZone;
     [field: Header("Visualization")]
     [SerializeField] private bool drawZone = true;
+    public string LevelName => levelName;
+    [SerializeField] private string levelName = "";
+    public static bool DoesCameraOffset(ScrollDirection _scrollDirection)
+    {
+        return _scrollDirection == ScrollDirection.Horizontal || _scrollDirection == ScrollDirection.Vertical;
+    }
     [SerializeField] private Color overrideLevelZoneColor = new Color(1,1,1,colorAlpha);
     public Color LevelZoneColor => 
         overrideLevelZoneColor != new Color(1,1,1,colorAlpha) ? 
@@ -52,27 +60,26 @@ public class LevelZone : MonoBehaviour
                 ScrollDirection.FollowPlayer => new Color(.2f, 1, .2f, colorAlpha),
                 _ => new Color(.2f, .2f, .2f, colorAlpha)
             };
-
-    public static bool DoesCameraOffset(ScrollDirection _scrollDirection)
+    public void RandomizeColor()
     {
-        return _scrollDirection == ScrollDirection.Horizontal || _scrollDirection == ScrollDirection.Vertical;
+        overrideLevelZoneColor = new Color(Random.value, Random.value, Random.value, colorAlpha);
     }
 
-    public BoxCollider2D bColl;
+    public BoxCollider2D BColl { get; private set; }
     private GameObject playerGO;
     private Transform camTransform;
 
     private void Start()
     {
-        if (bColl == null)
-            bColl = GetComponent<BoxCollider2D>();
-        bColl.isTrigger = true;
-        bColl.size = Size;
+        if (BColl == null)
+            BColl = GetComponent<BoxCollider2D>();
+        BColl.isTrigger = true;
+        BColl.size = Size;
         
         // Disable editing the box collider via the inspector
         // Forces changes to be made via the script
-        if (bColl.hideFlags != HideFlags.HideInInspector)
-            bColl.hideFlags =  HideFlags.HideInInspector;
+        if (BColl.hideFlags != HideFlags.HideInInspector)
+            BColl.hideFlags =  HideFlags.HideInInspector;
         
         if (playerGO == null)
             playerGO = GameObject.FindWithTag("Player");
@@ -90,7 +97,7 @@ public class LevelZone : MonoBehaviour
     {
         // Get min and max bounding position
         Vector2 pos = transform.position;
-        Vector2 extents = (Vector2)bColl.bounds.extents;
+        Vector2 extents = (Vector2)BColl.bounds.extents;
         Vector2 minBounds = pos - extents;
         Vector2 maxBounds = pos + extents;
 
@@ -106,7 +113,7 @@ public class LevelZone : MonoBehaviour
     {
         // Get min and max bounding position
         Vector2 pos = transform.position;
-        Vector2 extents = (Vector2)bColl.bounds.extents;
+        Vector2 extents = (Vector2)BColl.bounds.extents;
         Vector2 minBounds = pos - extents;
         Vector2 maxBounds = pos + extents;
         
@@ -168,7 +175,7 @@ public class LevelZone : MonoBehaviour
     public Vector2 GetNearestEdgePoint(Vector2 targetPosition)
     {
         // Get min and max bounding position
-        Bounds bCollBounds = bColl.bounds;
+        Bounds bCollBounds = BColl.bounds;
         Vector2 pos = bCollBounds.center;
         Vector3 extents = bCollBounds.extents;
         float clampedX;
@@ -187,7 +194,7 @@ public class LevelZone : MonoBehaviour
         if (!other.CompareTag("Player")) return;
         
         Vector3 cPos = camTransform.position; // camera position
-        Vector2 laPos = transform.position + (Vector3)bColl.offset; // level zone position
+        Vector2 laPos = transform.position + (Vector3)BColl.offset; // level zone position
         Vector2 pPos = playerGO.transform.position; // Player position
         Vector3 targetCamPos = scrollDirection switch // target position for camera based on level zone scroll direction
         {
@@ -230,10 +237,10 @@ public class LevelZone : MonoBehaviour
         Start();
         
         Gizmos.color = LevelZoneColor;
-        Gizmos.DrawCube(transform.position, (Vector3)bColl.size);
+        Gizmos.DrawCube(transform.position, (Vector3)BColl.size);
 
         UnityEditor.Handles.color = Color.white;
-        Bounds bCollBounds = bColl.bounds;
+        Bounds bCollBounds = BColl.bounds;
         switch (scrollDirection)
         {
             case ScrollDirection.Horizontal:

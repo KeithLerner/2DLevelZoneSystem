@@ -8,5 +8,7 @@
     <ui:Foldout text="Debug" name="DebugFoldout" binding-path="m_DebugFoldout" class="unity-base-field__aligned">
         <ui:Toggle label="Draw Zone" name="DrawZone" value="true" tooltip="Draws debug visuals to the scene view." binding-path="drawZone" class="unity-base-field__aligned" />
         <uie:ColorField label="Level Zone Color" value="#FFFFFF40" name="LevelZoneColor" show-alpha="false" tooltip="Color of the level zone area. Will revert to default values at FFFFFF." binding-path="overrideLevelZoneColor" class="unity-base-field__aligned" />
+        <ui:Button text="Randomize Zone Color" parse-escape-sequences="true" display-tooltip-when-elided="true" name="RandomizeColor" tooltip="Randomizes the level zone&apos;s color." class="unity-base-field__aligned" />
     </ui:Foldout>
+    <ui:Button text="Add Level Zone Entrance" parse-escape-sequences="true" display-tooltip-when-elided="true" name="AddEntrance" tooltip="Adds a child level zone entrance to the scene." />
 </ui:UXML>

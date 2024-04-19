@@ -4,7 +4,7 @@ using UnityEngine;
 public class LevelZoneEntrance : MonoBehaviour
 {
     [field: Header("Bounds")]
-    [field: SerializeField] public Vector2 Size { get; private set; } = Vector2.one;
+    [field: SerializeField] public Vector2 Size { get; private set; } = Vector2.one * 2;
     [field: SerializeField] public bool TransitionToEdgeCenter { get; private set; } = true; 
     
     private GameObject playerGO;
