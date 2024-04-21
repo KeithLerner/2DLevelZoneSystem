@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2657720708397922736}
   - component: {fileID: 6065821559136000288}
   m_Layer: 3
-  m_Name: LevelZoneEntrance (Horizontal)
+  m_Name: LevelZoneEntrance (Tall)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -76,7 +76,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 8, y: 1}
+  m_Size: {x: 1, y: 8}
   m_EdgeRadius: 0
 --- !u!114 &6065821559136000288
 MonoBehaviour:
@@ -90,4 +90,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5551a42e43fc09b4791c1e1dfe47277c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <Size>k__BackingField: {x: 8, y: 1}
+  <Size>k__BackingField: {x: 1, y: 8}
