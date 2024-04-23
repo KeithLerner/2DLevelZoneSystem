@@ -21,21 +21,24 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
             return File.Exists(LevelZoneSystemSettings.k_LevelZoneSystemSettingsPath);
         }
 
+        /// <summary>
+        /// This function is called when the user clicks on the target element in the Settings window.
+        /// </summary>
+        /// <param name="searchContext"></param>
+        /// <param name="rootElement"></param>
         public override void OnActivate(string searchContext, VisualElement rootElement)
         {
-            // This function is called when the user clicks on the MyCustom element in the Settings window.
             m_LevelZoneSystemSettings = LevelZoneSystemSettings.GetSerializedSettings();
         }
 
         public override void OnGUI(string searchContext)
         {
-            // EditorGUILayout.Toggle("Split Screen Mode", false);
-            // EditorGUILayout.Vector2IntField("Target Aspect Ratio", new Vector2Int(16, 9));
-            
-            EditorGUILayout.PropertyField(m_LevelZoneSystemSettings.FindProperty("SplitScreenMode"),
+            EditorGUILayout.PropertyField(m_LevelZoneSystemSettings.FindProperty("splitScreenMode"),
                 new GUIContent("Split Screen Mode"));
-            EditorGUILayout.PropertyField(m_LevelZoneSystemSettings.FindProperty("TargetAspectRatio"),
+            EditorGUILayout.PropertyField(m_LevelZoneSystemSettings.FindProperty("targetAspectRatio"),
                 new GUIContent("Target Aspect Ratio"));
+            EditorGUILayout.PropertyField(m_LevelZoneSystemSettings.FindProperty("debugLineWidth"),
+                new GUIContent("Debug Line Width"));
             
             m_LevelZoneSystemSettings.ApplyModifiedPropertiesWithoutUndo();
         }
@@ -48,7 +51,13 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
             {
                 var provider = new LevelZoneSystemSettingsProvider("Project/LevelZoneSystemSettingsProvider", SettingsScope.Project);
 
-                provider.keywords = new[] { "Levels", "Zones", "Target Aspect Ratio", "Split Screen Mode" };
+                provider.label = "2D Level Zone System Settings";
+                
+                provider.keywords = new[]
+                {
+                    "2D", "Levels", "Zones", "Target Aspect Ratio", "Split Screen Mode", "Debug Line Width",
+                    "Draw Line Width"
+                };
                 
                 return provider;
             }

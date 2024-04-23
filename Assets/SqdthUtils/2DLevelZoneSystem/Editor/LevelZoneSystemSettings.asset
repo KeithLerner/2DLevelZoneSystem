@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0ee179210971264fb1cc1288e7af410, type: 3}
   m_Name: LevelZoneSystemSettings
   m_EditorClassIdentifier: 
-  <SplitScreenMode>k__BackingField: 0
-  <TargetAspectRatio>k__BackingField: {x: 16, y: 9}
+  splitScreenMode: 0
+  targetAspectRatio: {x: 16, y: 9}
+  debugLineWidth: 8

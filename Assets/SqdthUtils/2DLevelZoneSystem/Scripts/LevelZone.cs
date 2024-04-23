@@ -5,7 +5,13 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
     [RequireComponent(typeof(BoxCollider2D))]
     public class LevelZone : MonoBehaviour
     {
-        public static float LineWidth => 8;
+        public static class LevelZoneSettings
+        {
+            public static bool SplitScreenMode { get; set; }
+            public static Vector2Int TargetAspectRatio { get; set; }
+            public static float DebugLineWidth { get; set; }
+        }
+        public static float LineWidth => LevelZoneSettings.DebugLineWidth;
     
         public enum ScrollDirection { Horizontal, Vertical, FollowPlayer, NoScroll }
         [Header("Behavior")]
@@ -33,7 +39,8 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         // == Sizing ==
         public Vector2 Size => size;
         [SerializeField] private Vector2 size = new Vector2(32, 32);
-        private float ScreenAspect => 16f / 9f; //Screen.width / Screen.height;
+        private float ScreenAspect => (float)LevelZoneSettings.TargetAspectRatio.x / 
+                                      LevelZoneSettings.TargetAspectRatio.y; //16f / 9f; //Screen.width / Screen.height;
         float CameraHeight => Camera.main.orthographicSize * 2;
         public Vector2 CameraSize => new Vector2(CameraHeight * ScreenAspect, CameraHeight);
         public Bounds CameraBounds => new Bounds(transform.position + (Vector3)CamOffset, 
