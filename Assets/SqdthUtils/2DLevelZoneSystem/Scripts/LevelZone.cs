@@ -37,7 +37,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         float CameraHeight => Camera.main.orthographicSize * 2;
         public Vector2 CameraSize => new Vector2(CameraHeight * ScreenAspect, CameraHeight);
         public Bounds CameraBounds => new Bounds(transform.position + (Vector3)CamOffset, 
-            Size + CameraSize + ILevelZonePlayer.PlayerSize);
+            Size + CameraSize - ILevelZonePlayer.PlayerSize);
 
 
         // == Debug ==
