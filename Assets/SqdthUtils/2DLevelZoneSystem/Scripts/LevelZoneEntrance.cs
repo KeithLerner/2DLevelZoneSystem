@@ -102,7 +102,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             {
                 pos = new Vector2(pos.x, min.y);
             }
-            else // Mathf.Abs(minDist - distTop) < .001f
+            else if (Mathf.Abs(minDist - distTop) < .001f)
             {
                 pos = new Vector2(pos.x, max.y);
             }
