@@ -250,6 +250,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
     
         private void OnDrawGizmos()
         {
+            // Early exit for don't draw room
             if (!DrawLevelZone) return;
 
             Start();
@@ -283,6 +284,14 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         public void DrawGizmosSelected() => OnDrawGizmosSelected();
         private void OnDrawGizmosSelected()
         {
+            // Early exit for don't draw room
+            if (!DrawLevelZone) return;
+            
+            // Early exit for zones without entrances
+            if (transform.childCount == 0) return;
+            if (transform.GetComponentsInChildren<LevelZoneEntrance>().Length == 0) return;
+            
+            
             Start();
         
             // Draw camera frame bounds from zone

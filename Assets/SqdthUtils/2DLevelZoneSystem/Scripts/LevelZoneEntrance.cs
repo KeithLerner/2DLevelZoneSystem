@@ -19,8 +19,14 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         {
             if (bColl == null)
                 bColl = GetComponent<BoxCollider2D>();
-            bColl.isTrigger = true;
-            bColl.size = Size;
+            if (!bColl.isTrigger)
+            {
+                bColl.isTrigger = true;
+            }
+            if (bColl.size != Size)
+            {
+                bColl.size = Size;
+            }
         
             // Disable editing the box collider via the inspector
             // Forces changes to be made via the script
@@ -222,6 +228,9 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         private void OnDrawGizmosSelected()
         {
             Start();
+
+            // Early exit for don't draw level zone
+            if (!owningZone.DrawLevelZone) return;
         
             // Set up drawing entrance
             if (owningZone != null)
