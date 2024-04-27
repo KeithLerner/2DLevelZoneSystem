@@ -100,6 +100,25 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         /// </summary>
         /// <param name="targetPosition"> The position to check. </param>
         /// <returns></returns>
+        private bool IsPlayerInZone()
+        {
+            // Get min and max bounding position
+            Vector2 pos = transform.position;
+            Vector2 targetPosition = playerGO.transform.position;
+            Vector2 zoneExtents = (Vector2)BColl.bounds.extents;
+            Vector2 playerExtents = ILevelZonePlayer.PlayerSize / 2f;
+            Vector2 minBounds = pos - zoneExtents + playerExtents;
+            Vector2 maxBounds = pos + zoneExtents - playerExtents;
+
+            return targetPosition.x >= minBounds.x && targetPosition.x <= maxBounds.x &&
+                   targetPosition.y >= minBounds.y && targetPosition.y <= maxBounds.y;
+        }
+    
+        /// <summary>
+        /// Check if a position is inside of the level zone.
+        /// </summary>
+        /// <param name="targetPosition"> The position to check. </param>
+        /// <returns></returns>
         private bool IsInsideLevelZone(Vector3 targetPosition)
         {
             // Get min and max bounding position
@@ -232,7 +251,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
 
             // Set camera to target position if not in zone bounds already
             Vector3 newCamPos = targetCamPos;
-            bool isInside = IsInsideLevelZone(other.transform.position);
+            bool isInside = IsPlayerInZone();
             if (!isInside)
             {
                 newCamPos = forceEdgeCenters ? 

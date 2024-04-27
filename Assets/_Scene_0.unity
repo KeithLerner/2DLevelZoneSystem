@@ -1473,7 +1473,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8787987148728087346, guid: 9e409c37a09a2db4a9830944490b2aec, type: 3}
       propertyPath: camOffset
-      value: -6.25
+      value: -6.5
       objectReference: {fileID: 0}
     - target: {fileID: 8787987148728087346, guid: 9e409c37a09a2db4a9830944490b2aec, type: 3}
       propertyPath: forceEdgeCenters
