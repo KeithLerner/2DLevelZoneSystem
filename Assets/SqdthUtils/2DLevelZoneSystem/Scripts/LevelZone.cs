@@ -107,8 +107,8 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             Vector2 targetPosition = playerGO.transform.position;
             Vector2 zoneExtents = (Vector2)BColl.bounds.extents;
             Vector2 playerExtents = ILevelZonePlayer.PlayerSize / 2f;
-            Vector2 minBounds = pos - zoneExtents + playerExtents;
-            Vector2 maxBounds = pos + zoneExtents - playerExtents;
+            Vector2 minBounds = pos - zoneExtents - playerExtents;
+            Vector2 maxBounds = pos + zoneExtents + playerExtents;
 
             return targetPosition.x >= minBounds.x && targetPosition.x <= maxBounds.x &&
                    targetPosition.y >= minBounds.y && targetPosition.y <= maxBounds.y;
