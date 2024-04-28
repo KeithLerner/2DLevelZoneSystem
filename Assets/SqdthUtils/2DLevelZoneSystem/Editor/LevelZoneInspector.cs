@@ -9,7 +9,7 @@ using Vector3 = UnityEngine.Vector3;
 
 namespace SqdthUtils._2DLevelZoneSystem.Editor
 {
-    [UnityEditor.CustomEditor(typeof(SqdthUtils._2DLevelZoneSystem.Scripts.LevelZone))]
+    [UnityEditor.CustomEditor(typeof(LevelZone))]
     public class LevelZoneInspector : UnityEditor.Editor
     {
         public VisualTreeAsset uxml;

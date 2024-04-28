@@ -121,8 +121,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         private void OnTriggerEnter2D(Collider2D other)
         {
             // Get and check for player
-            ILevelZonePlayer player = other.GetComponent<ILevelZonePlayer>();
-            if (player == null) return;
+            if (!other.TryGetComponent(out LevelZonePlayer player)) return;
         
             // Get player's GameObject
             playerGO = other.gameObject;
@@ -206,7 +205,8 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
                 if (owningZone.DrawLevelZone)
                 {
                     Vector3 pos = transform.position;
-                    Vector3 transitionPos = TransitionToEdgeCenter || owningZone.ForceEdgeCenters ? 
+                    Vector3 transitionPos = 
+                        TransitionToEdgeCenter || owningZone.ForceEdgeCenters ? 
                         owningZone.GetNearestEdgeCenter(pos) :
                         owningZone.GetNearestEdgePoint(pos);
                     transitionPos.z = owningZone.transform.position.z;

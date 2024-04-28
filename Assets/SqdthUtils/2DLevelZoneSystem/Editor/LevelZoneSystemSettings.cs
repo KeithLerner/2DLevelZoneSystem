@@ -1,4 +1,3 @@
-using SqdthUtils._2DLevelZoneSystem.Editor;
 using SqdthUtils._2DLevelZoneSystem.Scripts;
 using UnityEngine;
 
@@ -22,6 +21,10 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
         [Tooltip("The desired aspect ratio the game will be played at. " +
                  "This is used to draw camera bounding boxes surrounding level zones")]
         private Vector2Int targetAspectRatio = new Vector2Int(16, 9);
+        
+        [field: SerializeField]
+        [Tooltip("The desired width of drawn debug lines.")]
+        private float cameraSpeed = 45f;
 
         [field: SerializeField]
         [Tooltip("The desired width of drawn debug lines.")]
@@ -50,6 +53,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
             hideFlags = HideFlags.HideInHierarchy;
             LevelZone.LevelZoneSettings.SplitScreenMode = splitScreenMode;
             LevelZone.LevelZoneSettings.TargetAspectRatio = targetAspectRatio;
+            LevelZone.LevelZoneSettings.CameraSpeed = cameraSpeed;
             LevelZone.LevelZoneSettings.DebugLineWidth = debugLineWidth;
         }
     }

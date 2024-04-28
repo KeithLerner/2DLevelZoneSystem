@@ -3,13 +3,11 @@ using UnityEngine;
 namespace SqdthUtils._2DLevelZoneSystem.Scripts
 {
     [RequireComponent(typeof(Rigidbody2D))]
-    public class ExamplePlayer : MonoBehaviour, ILevelZonePlayer
+    public class ExamplePlayer : LevelZonePlayer
     {
         public float moveSpeed = 12f;
 
         private Rigidbody2D rb;
-        [SerializeField]
-        private Camera playerCamera;
 
         // Start is called before the first frame update
         void Start()
@@ -24,12 +22,6 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             movement *= moveSpeed * Time.fixedDeltaTime;
 
             rb.velocity = movement;
-        }
-    
-        Camera ILevelZonePlayer.PlayerCamera
-        {
-            get => playerCamera;
-            set => playerCamera = value;
         }
     }
 }
