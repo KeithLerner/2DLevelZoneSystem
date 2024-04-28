@@ -3,11 +3,21 @@ using UnityEngine;
 namespace SqdthUtils._2DLevelZoneSystem.Scripts
 {
     [RequireComponent(typeof(BoxCollider2D))]
-    public class LevelZoneEntrance : MonoBehaviour
+    public class LevelZoneEntrance : MonoBehaviour, ISnapToBounds
     {
         [field: Header("Bounds")]
         [field: SerializeField] public Vector2 Size { get; private set; } = Vector2.one * 2;
         [field: SerializeField] public bool TransitionToEdgeCenter { get; private set; } = true; 
+        
+        // == Snapping ==
+        public Bounds SnappingBounds
+        {
+            get => owningZone.CameraBounds;
+        }
+        public Vector2 SnappingOffset
+        {
+            get => -Size / 2f;
+        }
     
         private GameObject playerGO;
         private Transform camTransform;
@@ -78,44 +88,18 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             return axes;
         }
 
-        public void RoundPositionToOwningCameraBounds()
+        protected virtual void TransitionCamera()
         {
-            // Get position, min, and max bounding position
-            Vector2 pos = transform.position;
-            Vector3 extents = bColl.bounds.extents;
-            Vector2 min = owningZone.CameraBounds.min + extents;
-            Vector2 max = owningZone.CameraBounds.max - extents;
-            
-            // Calculate the distances to each edge
-            float distLeft = pos.x - min.x;
-            float distRight = max.x - pos.x;
-            float distBottom = pos.y - min.y;
-            float distTop = max.y - pos.y;
+            Vector3 endPos = TransitionToEdgeCenter || owningZone.ForceEdgeCenters ?
+                owningZone.GetNearestEdgeCenter(transform.position) :
+                owningZone.GetNearestEdgePoint(transform.position);
+            endPos.z = camTransform.position.z;
+            camTransform.position = endPos;
+        }
 
-            // Find the minimum distance
-            float minDist = Mathf.Min(distLeft, distRight, distBottom, distTop);
-
-            // Round the position to the nearest edge
-            if (Mathf.Abs(minDist - distLeft) < .001f)
-            {
-                pos = new Vector2(min.x, pos.y);
-            }
-            else if (Mathf.Abs(minDist - distRight) < .001f)
-            {
-                pos = new Vector2(max.x, pos.y);
-            }
-            else if (Mathf.Abs(minDist - distBottom) < .001f)
-            {
-                pos = new Vector2(pos.x, min.y);
-            }
-            else if (Mathf.Abs(minDist - distTop) < .001f)
-            {
-                pos = new Vector2(pos.x, max.y);
-            }
-
-            Vector3 newPos = pos;
-            newPos.z = owningZone.transform.position.z;
-            transform.position = newPos;
+        protected virtual void TransitionPlayer()
+        {
+            //throw new NotImplementedException();
         }
 
         private void OnTriggerEnter2D(Collider2D other)
@@ -154,40 +138,11 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             }
         
             // Transition camera
-            Vector3 endPos = TransitionToEdgeCenter || owningZone.ForceEdgeCenters ?
-                owningZone.GetNearestEdgeCenter(transform.position) :
-                owningZone.GetNearestEdgePoint(transform.position);
-            endPos.z = camTransform.position.z;
-            camTransform.position = endPos;
-        
-            // Transition player (NOT IMPLEMENTED YET)
-            //StartCoroutine(nameof(TransitionPlayer));
+            TransitionCamera();
+
+            // Transition player
+            TransitionPlayer();
         }
-
-        /*
-    private IEnumerator TransitionPlayer()
-    {
-        // HARD SET VELOCITY DURING TRANSITION
-        // NOTHING ELSE SHOULD BE HAPPENING DURING THIS TIME
-        Rigidbody2D rb = playerGO.GetComponent<Rigidbody2D>();
-        Vector2 vel = rb.velocity;
-        rb.isKinematic = true;
-        rb.velocity = vel;
-
-        Debug.Log("Starting player transition");
-        
-        // Wait for end of transition
-        //yield return new WaitForSeconds(transitionTime);
-        
-        Debug.Log("Ending player transition");
-        
-        // Restore rigidbody mode and velocity
-        rb.isKinematic = false;
-        rb.velocity = vel;
-        
-        yield return null;
-    } 
-    */
     
 #if UNITY_EDITOR
 
@@ -221,7 +176,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
                 }
             
                 // Round position to camera bounds
-                RoundPositionToOwningCameraBounds();
+                (this as ISnapToBounds).RoundPositionToBounds(transform);
             }
         }
     
@@ -252,6 +207,6 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         }
     
 #endif
-    
+        
     }
 }

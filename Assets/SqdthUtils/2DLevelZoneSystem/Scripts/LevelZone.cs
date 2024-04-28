@@ -3,7 +3,7 @@ using UnityEngine;
 namespace SqdthUtils._2DLevelZoneSystem.Scripts
 {
     [RequireComponent(typeof(BoxCollider2D))]
-    public class LevelZone : MonoBehaviour
+    public class LevelZone : MonoBehaviour, ISnapToBounds
     {
         public static class LevelZoneSettings
         {
@@ -46,7 +46,10 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         public Vector2 CameraSize => new Vector2(CameraHeight * ScreenAspect, CameraHeight);
         public Bounds CameraBounds => new Bounds(transform.position + (Vector3)CamOffset, 
             Size + CameraSize - LevelZonePlayer.Size);
-
+        
+        // == Snapping ==
+        public Bounds SnappingBounds { get => BColl.bounds; }
+        public Vector2 SnappingOffset { get => -Size / 2f; }
 
         // == Debug ==
         private const float colorAlpha = .4f; 
@@ -326,6 +329,6 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         }
     
 #endif
-    
+        
     }
 }
