@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5774800621154582266}
   - component: {fileID: 9144759013441225812}
   - component: {fileID: 6437455232327443155}
-  m_Layer: 3
+  m_Layer: 2
   m_Name: LevelZone (Horizontal)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -98,7 +98,6 @@ MonoBehaviour:
   size: {x: 32, y: 32}
   drawZone: 1
   overrideLevelZoneColor: {r: 1, g: 1, b: 1, a: 0.4}
-  bColl: {fileID: 9144759013441225812}
 --- !u!1001 &993575231508383172
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -113,7 +112,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 8448ad6083365fe4cabf42e32cad5066, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -28.315685
+      value: -29.222221
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 8448ad6083365fe4cabf42e32cad5066, type: 3}
       propertyPath: m_LocalPosition.y
@@ -175,7 +174,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 8448ad6083365fe4cabf42e32cad5066, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 28.315685
+      value: 29.222221
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 8448ad6083365fe4cabf42e32cad5066, type: 3}
       propertyPath: m_LocalPosition.y

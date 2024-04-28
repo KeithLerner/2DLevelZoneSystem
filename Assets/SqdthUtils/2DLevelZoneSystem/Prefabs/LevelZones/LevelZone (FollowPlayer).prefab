@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7255723286259643979}
   - component: {fileID: 130033346850697611}
   - component: {fileID: 4551877014460778183}
-  m_Layer: 3
+  m_Layer: 2
   m_Name: LevelZone (FollowPlayer)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -114,7 +114,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 8448ad6083365fe4cabf42e32cad5066, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -28.315685
+      value: -29.222221
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 8448ad6083365fe4cabf42e32cad5066, type: 3}
       propertyPath: m_LocalPosition.y
@@ -184,7 +184,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 13a4e285053569849951b286f490507d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 23.5
+      value: 22.5
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 13a4e285053569849951b286f490507d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -246,7 +246,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 8448ad6083365fe4cabf42e32cad5066, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 28.315685
+      value: 29.222221
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 8448ad6083365fe4cabf42e32cad5066, type: 3}
       propertyPath: m_LocalPosition.y
@@ -316,7 +316,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 13a4e285053569849951b286f490507d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -23.5
+      value: -22.5
       objectReference: {fileID: 0}
     - target: {fileID: 2407381249052242751, guid: 13a4e285053569849951b286f490507d, type: 3}
       propertyPath: m_LocalPosition.z

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2407381249052242751}
   - component: {fileID: 2657720708397922736}
   - component: {fileID: 6065821559136000288}
-  m_Layer: 3
+  m_Layer: 2
   m_Name: LevelZoneEntrance (Tall)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -91,3 +91,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <Size>k__BackingField: {x: 1, y: 8}
+  <TransitionToEdgeCenter>k__BackingField: 1
