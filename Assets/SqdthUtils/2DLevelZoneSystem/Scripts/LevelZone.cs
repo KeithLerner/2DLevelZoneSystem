@@ -41,15 +41,25 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         public Vector2 Size => size;
         [SerializeField] private Vector2 size = new Vector2(32, 32);
         private float ScreenAspect => (float)LevelZoneSettings.TargetAspectRatio.x / 
-                                      LevelZoneSettings.TargetAspectRatio.y; //16f / 9f; //Screen.width / Screen.height;
+                                      LevelZoneSettings.TargetAspectRatio.y; 
         float CameraHeight => Camera.main.orthographicSize * 2;
         public Vector2 CameraSize => new Vector2(CameraHeight * ScreenAspect, CameraHeight);
         public Bounds CameraBounds => new Bounds(transform.position + (Vector3)CamOffset, 
             Size + CameraSize - LevelZonePlayer.Size);
         
         // == Snapping ==
-        public Bounds SnappingBounds { get => BColl.bounds; }
-        public Vector2 SnappingOffset { get => -Size / 2f; }
+        public Bounds SnappingBounds
+        {
+            get
+            {
+                if (transform.parent.TryGetComponent(out LevelZone lz))
+                {
+                    return lz.BColl.bounds;
+                }
+                return new Bounds();
+            }
+        }
+        public Vector2 SnappingOffset => Size / 2f;
 
         // == Debug ==
         private const float colorAlpha = .4f; 
@@ -304,6 +314,12 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
                 default: break;
             }
 
+            // Round position to camera bounds
+            if (transform.parent.TryGetComponent(out LevelZone lz))
+            {
+                Debug.Log("SNAPPING " + lz);
+                (this as ISnapToBounds).RoundPositionToBounds(transform);
+            }
         }
 
         public void DrawGizmosSelected() => OnDrawGizmosSelected();

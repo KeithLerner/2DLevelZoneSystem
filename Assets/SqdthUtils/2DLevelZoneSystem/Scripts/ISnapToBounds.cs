@@ -45,5 +45,40 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             newPos.z = SnappingBounds.center.z;
             target.position = newPos;
         }
+        
+        public Vector3[] GetValidMovementAxes(Bounds toSnapBounds)
+        {
+            // Start new Vector3[] for return values
+            Vector3[] axes = new Vector3[2];
+        
+            // Get position, min, and max bounding position
+            Vector2 pos = toSnapBounds.center;
+            Vector2 extents = toSnapBounds.extents;
+            Vector2 min = (Vector2)SnappingBounds.min - extents;
+            Vector2 max = (Vector2)SnappingBounds.max + extents;
+            
+            // Calculate the distances to each edge
+            float distLeft = pos.x - min.x;
+            float distRight = max.x - pos.x;
+            float distBottom = pos.y - min.y;
+            float distTop = max.y - pos.y;
+
+            // Round the position to the nearest edge
+            // If near to left or right edge
+            if (Mathf.Abs(distLeft) < .001f ||
+                Mathf.Abs(distRight) < .001f)
+            {
+                axes[0] = Vector3.up;
+            }
+        
+            // If near to top or bottom edge
+            if (Mathf.Abs(distTop) < .001f ||
+                Mathf.Abs(distBottom) < .001f)
+            {
+                axes[1] = Vector3.right;
+            }
+
+            return axes;
+        }
     }
 }

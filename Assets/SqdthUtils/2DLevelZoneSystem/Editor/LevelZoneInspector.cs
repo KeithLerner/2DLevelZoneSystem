@@ -85,7 +85,58 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
         
             // Get level zone position 
             Vector3 pos = targetLevelZone.transform.position;
-        
+            
+            // Draw level zone children handles
+            foreach (LevelZone lz in targetLevelZone.transform.GetComponentsInChildren<LevelZone>())
+            {
+                // Get a level zone entrance position
+                Vector3 lzPoz = lz.transform.position;
+            
+                // Track position influence
+                Vector3 endLzPos = lzPoz;
+            
+                // Get valid movement axis
+                Vector3[] dirs = ((ISnapToBounds)lz).GetValidMovementAxes(lz.BColl.bounds);
+
+                // Draw handles using dirs
+                for (var i = 0; i < dirs.Length; i++)
+                {
+                    // Set handles color
+                    if (dirs[i].magnitude == 0)
+                    {
+                        UnityEditor.Handles.color = Color.clear;
+                    }
+                    else if (Vector3.Angle(dirs[i], Vector3.up) < 1)
+                    {
+                        UnityEditor.Handles.color = Color.green;
+                    }
+                    else if (Vector3.Angle(dirs[i], Vector3.right) < 1)
+                    {
+                        UnityEditor.Handles.color = Color.red;
+                    }
+                    else // Shouldn't happen, magenta indicates error
+                    {
+                        UnityEditor.Handles.color = Color.magenta;
+                    }
+
+                    // Modify dir if needed
+                    if (lzPoz.x > pos.x)
+                    {
+                        dirs[i].x *= -1;
+                    }
+                    if (lzPoz.y > pos.y)
+                    {
+                        dirs[i].y *= -1;
+                    }
+
+                    // Draw handle and add influence to end position
+                    endLzPos += UnityEditor.Handles.Slider(lzPoz, dirs[i]) - lzPoz;
+                }    
+
+                // Set new level zone entrance position to calculated end position 
+                lz.transform.position = endLzPos;
+            }
+            
             // Draw level zone entrance handles
             foreach (LevelZoneEntrance lze in targetLevelZone.transform.GetComponentsInChildren<LevelZoneEntrance>())
             {
