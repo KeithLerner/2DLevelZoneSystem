@@ -9,6 +9,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         {
             public static bool SplitScreenMode { get; set; }
             public static Vector2Int TargetAspectRatio { get; set; }
+            public static float CameraSpeed { get; set; }
             public static float DebugLineWidth { get; set; }
         }
         public static float LineWidth => LevelZoneSettings.DebugLineWidth;
@@ -44,7 +45,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         float CameraHeight => Camera.main.orthographicSize * 2;
         public Vector2 CameraSize => new Vector2(CameraHeight * ScreenAspect, CameraHeight);
         public Bounds CameraBounds => new Bounds(transform.position + (Vector3)CamOffset, 
-            Size + CameraSize - ILevelZonePlayer.PlayerSize);
+            Size + CameraSize - LevelZonePlayer.Size);
 
 
         // == Debug ==
@@ -106,7 +107,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             Vector2 pos = transform.position;
             Vector2 targetPosition = playerGO.transform.position;
             Vector2 zoneExtents = (Vector2)BColl.bounds.extents;
-            Vector2 playerExtents = ILevelZonePlayer.PlayerSize / 2f;
+            Vector2 playerExtents = LevelZonePlayer.Size / 2f;
             Vector2 minBounds = pos - zoneExtents - playerExtents;
             Vector2 maxBounds = pos + zoneExtents + playerExtents;
 
@@ -261,7 +262,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             newCamPos.z = cPos.z;
             camTransform.position = Vector3.Lerp(
                 cPos, newCamPos, 
-                Time.fixedDeltaTime * (isInside ? 10 : 25)
+                Time.fixedDeltaTime * LevelZoneSettings.CameraSpeed
             );
         }
 
