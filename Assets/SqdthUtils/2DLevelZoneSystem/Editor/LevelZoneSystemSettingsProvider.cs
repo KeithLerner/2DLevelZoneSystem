@@ -37,6 +37,8 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
                 new GUIContent("Split Screen Mode"));
             EditorGUILayout.PropertyField(m_LevelZoneSystemSettings.FindProperty("targetAspectRatio"),
                 new GUIContent("Target Aspect Ratio"));
+            EditorGUILayout.PropertyField(m_LevelZoneSystemSettings.FindProperty("cameraSpeed"),
+                new GUIContent("Camera Speed"));
             EditorGUILayout.PropertyField(m_LevelZoneSystemSettings.FindProperty("debugLineWidth"),
                 new GUIContent("Debug Line Width"));
             

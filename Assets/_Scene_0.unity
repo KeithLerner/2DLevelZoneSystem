@@ -391,7 +391,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4551877014460778183, guid: 745cb23b78a806a47abe49e220ce0c79, type: 3}
       propertyPath: scrollDirection
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5105517875795010480, guid: 745cb23b78a806a47abe49e220ce0c79, type: 3}
       propertyPath: m_LocalPosition.x
@@ -399,7 +399,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5105517875795010480, guid: 745cb23b78a806a47abe49e220ce0c79, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 19
+      value: 15.630001
       objectReference: {fileID: 0}
     - target: {fileID: 6209680321606797708, guid: 745cb23b78a806a47abe49e220ce0c79, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1026,6 +1026,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3215956153106102011, guid: 2393bf51c4629bb4dad0aab228c5c934, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -21.222221
+      objectReference: {fileID: 0}
     - target: {fileID: 5774800621154582266, guid: 2393bf51c4629bb4dad0aab228c5c934, type: 3}
       propertyPath: m_LocalPosition.x
       value: 8
@@ -1074,9 +1078,13 @@ PrefabInstance:
       propertyPath: size.y
       value: 13
       objectReference: {fileID: 0}
+    - target: {fileID: 6437455232327443155, guid: 2393bf51c4629bb4dad0aab228c5c934, type: 3}
+      propertyPath: camOffset
+      value: 6.5
+      objectReference: {fileID: 0}
     - target: {fileID: 7492316958292714341, guid: 2393bf51c4629bb4dad0aab228c5c934, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 28.315685
+      value: 21.222221
       objectReference: {fileID: 0}
     - target: {fileID: 9144759013441225812, guid: 2393bf51c4629bb4dad0aab228c5c934, type: 3}
       propertyPath: m_Size.x
@@ -1087,7 +1095,9 @@ PrefabInstance:
       value: 13
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 6346270691625434309, guid: 2393bf51c4629bb4dad0aab228c5c934, type: 3}
+    - {fileID: 1389688238871718235, guid: 2393bf51c4629bb4dad0aab228c5c934, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2393bf51c4629bb4dad0aab228c5c934, type: 3}
@@ -2081,7 +2091,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8787987148728087346, guid: 9e409c37a09a2db4a9830944490b2aec, type: 3}
       propertyPath: camOffset
-      value: 6.5
+      value: -6.5
       objectReference: {fileID: 0}
     - target: {fileID: 8787987148728087346, guid: 9e409c37a09a2db4a9830944490b2aec, type: 3}
       propertyPath: forceEdgeCenters

@@ -101,25 +101,6 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         /// </summary>
         /// <param name="targetPosition"> The position to check. </param>
         /// <returns></returns>
-        private bool IsPlayerInZone()
-        {
-            // Get min and max bounding position
-            Vector2 pos = transform.position;
-            Vector2 targetPosition = playerGO.transform.position;
-            Vector2 zoneExtents = (Vector2)BColl.bounds.extents;
-            Vector2 playerExtents = LevelZonePlayer.Size / 2f;
-            Vector2 minBounds = pos - zoneExtents - playerExtents;
-            Vector2 maxBounds = pos + zoneExtents + playerExtents;
-
-            return targetPosition.x >= minBounds.x && targetPosition.x <= maxBounds.x &&
-                   targetPosition.y >= minBounds.y && targetPosition.y <= maxBounds.y;
-        }
-    
-        /// <summary>
-        /// Check if a position is inside of the level zone.
-        /// </summary>
-        /// <param name="targetPosition"> The position to check. </param>
-        /// <returns></returns>
         private bool IsInsideLevelZone(Vector3 targetPosition)
         {
             // Get min and max bounding position
@@ -228,8 +209,19 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
 
         private void OnTriggerStay2D(Collider2D other)
         {
-            if (!other.CompareTag("Player")) return;
+            // Get player or early return for non-players
+            if (!other.TryGetComponent(out LevelZonePlayer player)) return;
+            
+            // Check that player is not in another zone or early return
+            // Allows zones to neighbor each other without making use of
+            // entrances
+            if (player.CurrentZone == null) player.CurrentZone = this;
+            if (player.CurrentZone != this) return;
+	
+            // Update camera transform to this player's transform
+            camTransform = player.PlayerCamera.transform;
         
+            // Get target camera position
             Vector3 cPos = camTransform.position; // camera position
             Vector2 laPos = transform.position + (Vector3)BColl.offset; // level zone position
             Vector2 pPos = playerGO.transform.position; // Player position
@@ -250,18 +242,28 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
                 _ => new Vector2(laPos.x, laPos.y),
             };
 
-            // Set camera to target position if not in zone bounds already
-            Vector3 newCamPos = targetCamPos;
-            bool isInside = IsPlayerInZone();
+            // Set camera target position if not in zone bounds
+            bool isInside = IsInsideLevelZone(pPos);
             if (!isInside)
             {
-                newCamPos = forceEdgeCenters ? 
-                    GetNearestEdgeCenter(pPos) :
-                    GetNearestEdgePoint(pPos);
+                // Update target camera position depending on if this zone
+                // forces edge center transitions
+                targetCamPos = forceEdgeCenters ? 
+                    GetNearestEdgeCenter(cPos) :
+                    GetNearestEdgePoint(cPos);
+                
+                // Update player's current zone to null
+                // Allows zones to neighbor each other without making use of
+                // entrances
+                player.CurrentZone = null;
             }
-            newCamPos.z = cPos.z;
+            
+            // Fix target camera position's Z value
+            targetCamPos.z = cPos.z;
+            
+            // Set player's camera position
             camTransform.position = Vector3.Lerp(
-                cPos, newCamPos, 
+                cPos, targetCamPos, 
                 Time.fixedDeltaTime * LevelZoneSettings.CameraSpeed
             );
         }
