@@ -1,3 +1,4 @@
+using System;
 using SqdthUtils._2DLevelZoneSystem.Scripts;
 using UnityEngine;
 
@@ -46,6 +47,11 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
         internal static SerializedObject GetSerializedSettings()
         {
             return new SerializedObject(GetOrCreateSettings());
+        }
+
+        private void OnEnable()
+        {
+            OnValidate();
         }
 
         private void OnValidate()
