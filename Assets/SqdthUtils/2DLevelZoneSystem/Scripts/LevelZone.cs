@@ -7,7 +7,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
     {
         public static class LevelZoneSettings
         {
-            public static bool SplitScreenMode { get; set; }
+            public static bool CinemachineMode { get; set; }
             public static Vector2Int TargetAspectRatio { get; set; }
             public static float CameraSpeed { get; set; }
             public static float DebugLineWidth { get; set; }

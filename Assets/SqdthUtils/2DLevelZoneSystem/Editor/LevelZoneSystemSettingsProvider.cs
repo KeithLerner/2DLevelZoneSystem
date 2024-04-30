@@ -33,8 +33,8 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
 
         public override void OnGUI(string searchContext)
         {
-            EditorGUILayout.PropertyField(m_LevelZoneSystemSettings.FindProperty("splitScreenMode"),
-                new GUIContent("Split Screen Mode"));
+            EditorGUILayout.PropertyField(m_LevelZoneSystemSettings.FindProperty("cinemachineMode"),
+                new GUIContent("Cinemachine Mode"));
             EditorGUILayout.PropertyField(m_LevelZoneSystemSettings.FindProperty("targetAspectRatio"),
                 new GUIContent("Target Aspect Ratio"));
             EditorGUILayout.PropertyField(m_LevelZoneSystemSettings.FindProperty("cameraSpeed"),
@@ -57,7 +57,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
                 
                 provider.keywords = new[]
                 {
-                    "2D", "Levels", "Zones", "Target Aspect Ratio", "Split Screen Mode", "Debug Line Width",
+                    "2D", "Levels", "Zones", "Target Aspect Ratio", "Cinemachine Mode", "Debug Line Width",
                     "Draw Line Width"
                 };
                 

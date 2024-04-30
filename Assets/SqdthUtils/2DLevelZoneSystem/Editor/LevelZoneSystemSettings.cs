@@ -1,6 +1,7 @@
 using System;
 using SqdthUtils._2DLevelZoneSystem.Scripts;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 #if UNITY_EDITOR
 
@@ -16,7 +17,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
             "Assets/SqdthUtils/2DLevelZoneSystem/Editor/LevelZoneSystemSettings.asset";
 
         [field: SerializeField] [Tooltip("NOT READY YET!!!!")]
-        private bool splitScreenMode = false;
+        private bool cinemachineMode = false;
             
         [field: SerializeField]
         [Tooltip("The desired aspect ratio the game will be played at. " +
@@ -57,7 +58,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
         private void OnValidate()
         {
             hideFlags = HideFlags.HideInHierarchy;
-            LevelZone.LevelZoneSettings.SplitScreenMode = splitScreenMode;
+            LevelZone.LevelZoneSettings.CinemachineMode = cinemachineMode;
             LevelZone.LevelZoneSettings.TargetAspectRatio = targetAspectRatio;
             LevelZone.LevelZoneSettings.CameraSpeed = cameraSpeed;
             LevelZone.LevelZoneSettings.DebugLineWidth = debugLineWidth;
