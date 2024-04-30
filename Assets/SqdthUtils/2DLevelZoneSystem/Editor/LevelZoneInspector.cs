@@ -19,6 +19,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
         private FloatField cameraOffsetFloatField;
         private Button randomizeColorButton;
         private Button addEntranceButton;
+        private Button addNestedZoneButton;
 
         private LevelZone targetLevelZone;
 
@@ -38,6 +39,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
             cameraOffsetFloatField = rootElement.Q<FloatField>("CameraOffset");
             randomizeColorButton = rootElement.Q<Button>("RandomizeColor");
             addEntranceButton = rootElement.Q<Button>("AddEntrance");
+            addNestedZoneButton = rootElement.Q<Button>("AddNestedZone");
         
             // Hide cam offset if not supported by current scroll direction
             scrollDirectionEnumField.RegisterCallback<ChangeEvent<string>>(evt =>
@@ -67,8 +69,31 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
                 // Give it a random position
                 go.transform.position = Random.insideUnitCircle * targetLevelZone.Size.magnitude;
 
-                // Uncomment the following line to automatically select the added level zone entrance
-                //UnityEditor.Selection.SetActiveObjectWithContext(go, null);
+                // Comment the following line to stop automatically selecting the added level zone entrance
+                UnityEditor.Selection.SetActiveObjectWithContext(go, null);
+            });
+            
+            // Link add level zone add entrance button to functionality
+            addNestedZoneButton.clickable = new Clickable(() =>
+            {
+                // Create a new level zone
+                GameObject go = new GameObject(
+                    "new LevelZone",
+                    typeof(LevelZone)
+                );
+
+                LevelZone newLz = go.GetComponent<LevelZone>();
+                newLz.scrollDirection = LevelZone.ScrollDirection.NoScroll;
+                newLz.Size = targetLevelZone.Size / 4;
+            
+                // Set it as a child of the target level zone
+                go.transform.SetParent(targetLevelZone.transform);
+            
+                // Give it a random position
+                go.transform.position = Random.insideUnitCircle * targetLevelZone.Size.magnitude;
+
+                // Comment the following line to stop automatically selecting the new child level zone
+                UnityEditor.Selection.SetActiveObjectWithContext(go, null);
             });
 
             // Return the finished Inspector UI.
@@ -89,6 +114,9 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
             // Draw level zone children handles
             foreach (LevelZone lz in targetLevelZone.transform.GetComponentsInChildren<LevelZone>())
             {
+                // Skip targeted zone
+                if (lz == targetLevelZone) continue;
+                
                 // Get a level zone entrance position
                 Vector3 lzPoz = lz.transform.position;
             

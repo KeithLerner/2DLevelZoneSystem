@@ -38,7 +38,11 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         public bool ForceEdgeCenters => forceEdgeCenters;
     
         // == Sizing ==
-        public Vector2 Size => size;
+        public Vector2 Size 
+        { 
+            get => size;
+            set => size = value;
+        }
         [SerializeField] private Vector2 size = new Vector2(32, 32);
         private float ScreenAspect => (float)LevelZoneSettings.TargetAspectRatio.x / 
                                       LevelZoneSettings.TargetAspectRatio.y; 
@@ -317,7 +321,6 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             // Round position to camera bounds
             if (transform.parent.TryGetComponent(out LevelZone lz))
             {
-                Debug.Log("SNAPPING " + lz);
                 (this as ISnapToBounds).RoundPositionToBounds(transform);
             }
         }

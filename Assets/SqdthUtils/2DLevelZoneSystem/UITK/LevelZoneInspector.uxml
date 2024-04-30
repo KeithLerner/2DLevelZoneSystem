@@ -11,4 +11,5 @@
         <ui:Button text="Randomize Zone Color" parse-escape-sequences="true" display-tooltip-when-elided="true" name="RandomizeColor" tooltip="Randomizes the level zone&apos;s color." class="unity-base-field__aligned" />
     </ui:Foldout>
     <ui:Button text="Add Level Zone Entrance" parse-escape-sequences="true" display-tooltip-when-elided="true" name="AddEntrance" tooltip="Adds a child level zone entrance to the scene." />
+    <ui:Button text="Add Child Level Zone" parse-escape-sequences="true" display-tooltip-when-elided="true" name="AddNestedZone" tooltip="Adds a child level zone entrance to the scene." />
 </ui:UXML>
