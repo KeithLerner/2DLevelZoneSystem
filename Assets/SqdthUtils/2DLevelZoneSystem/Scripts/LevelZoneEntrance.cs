@@ -94,7 +94,11 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
 
         protected virtual void TransitionPlayer()
         {
-            //throw new NotImplementedException();
+            Vector3 endPos = TransitionToEdgeCenter || owningZone.ForceEdgeCenters ?
+                owningZone.GetNearestEdgeCenter(transform.position) :
+                owningZone.GetNearestEdgePoint(transform.position);
+            endPos.z = owningZone.transform.position.z;
+            playerGO.transform.position = endPos;
         }
 
         private void OnTriggerEnter2D(Collider2D other)
