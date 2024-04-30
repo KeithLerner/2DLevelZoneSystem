@@ -81,16 +81,18 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
                     "new LevelZone",
                     typeof(LevelZone)
                 );
-
-                LevelZone newLz = go.GetComponent<LevelZone>();
-                newLz.scrollDirection = LevelZone.ScrollDirection.NoScroll;
-                newLz.Size = targetLevelZone.Size / 4;
             
                 // Set it as a child of the target level zone
                 go.transform.SetParent(targetLevelZone.transform);
             
                 // Give it a random position
                 go.transform.position = Random.insideUnitCircle * targetLevelZone.Size.magnitude;
+
+                // Set size and mode
+                LevelZone newLz = go.GetComponent<LevelZone>();
+                newLz.scrollDirection = LevelZone.ScrollDirection.FollowPlayer;
+                newLz.Size = ((Vector2)targetLevelZone.CameraBounds.size -
+                              targetLevelZone.Size) / 2f;
 
                 // Comment the following line to stop automatically selecting the new child level zone
                 UnityEditor.Selection.SetActiveObjectWithContext(go, null);
