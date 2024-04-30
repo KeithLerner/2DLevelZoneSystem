@@ -379,7 +379,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2622819702632223897, guid: 745cb23b78a806a47abe49e220ce0c79, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 7.485265
+      value: 11.6
       objectReference: {fileID: 0}
     - target: {fileID: 2668898268374585134, guid: 745cb23b78a806a47abe49e220ce0c79, type: 3}
       propertyPath: m_Name
@@ -387,15 +387,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5105517875795010480, guid: 745cb23b78a806a47abe49e220ce0c79, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 29.222221
+      value: -29.222221
       objectReference: {fileID: 0}
     - target: {fileID: 5105517875795010480, guid: 745cb23b78a806a47abe49e220ce0c79, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 19
+      value: -7.4478273
+      objectReference: {fileID: 0}
+    - target: {fileID: 5845879522038054534, guid: 745cb23b78a806a47abe49e220ce0c79, type: 3}
+      propertyPath: <LockToParentBounds>k__BackingField
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6209680321606797708, guid: 745cb23b78a806a47abe49e220ce0c79, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -12.752827
+      value: -11.733261
       objectReference: {fileID: 0}
     - target: {fileID: 6209680321606797708, guid: 745cb23b78a806a47abe49e220ce0c79, type: 3}
       propertyPath: m_LocalPosition.y

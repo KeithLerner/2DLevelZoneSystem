@@ -331,9 +331,11 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             // Early exit for don't draw room
             if (!DrawLevelZone) return;
             
-            // Early exit for zones without entrances
+            // Early exit for zones without active children using their snapping
             if (transform.childCount == 0) return;
-            if (transform.GetComponentsInChildren<LevelZoneEntrance>().Length == 0) return;
+            ISnapToBounds[] snapChildren =
+                transform.GetComponentsInChildren<ISnapToBounds>(false);
+            if (snapChildren.Length < 2) return;
             
             
             Start();

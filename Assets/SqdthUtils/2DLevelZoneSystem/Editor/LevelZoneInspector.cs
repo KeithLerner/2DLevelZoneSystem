@@ -120,10 +120,10 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
                 if (lz == targetLevelZone) continue;
                 
                 // Get a level zone entrance position
-                Vector3 lzPoz = lz.transform.position;
+                Vector3 lzPos = lz.transform.position;
             
                 // Track position influence
-                Vector3 endLzPos = lzPoz;
+                Vector3 endLzPos = lzPos;
             
                 // Get valid movement axis
                 Vector3[] dirs = ((ISnapToBounds)lz).GetValidMovementAxes(lz.BColl.bounds);
@@ -150,17 +150,20 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
                     }
 
                     // Modify dir if needed
-                    if (lzPoz.x > pos.x)
+                    if (lzPos.x > pos.x)
                     {
                         dirs[i].x *= -1;
                     }
-                    if (lzPoz.y > pos.y)
+                    if (lzPos.y > pos.y)
                     {
                         dirs[i].y *= -1;
                     }
 
                     // Draw handle and add influence to end position
-                    endLzPos += UnityEditor.Handles.Slider(lzPoz, dirs[i]) - lzPoz;
+                    endLzPos += 
+                        ((ISnapToBounds)lz).RoundLocationToBounds(
+                            UnityEditor.Handles.Slider(lzPos, dirs[i])
+                        ) - lzPos;
                 }    
 
                 // Set new level zone entrance position to calculated end position 
@@ -175,43 +178,59 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
             
                 // Track position influence
                 Vector3 endLzePos = lzePos;
-            
-                // Get valid movement axis
-                Vector3[] dirs = lze.GetValidMovementAxes();
-
-                // Draw handles using dirs
-                for (var i = 0; i < dirs.Length; i++)
+                
+                // Handles based on locking
+                Vector3 handlePos;
+                if (lze.LockToParentBounds)
                 {
-                    // Set handles color
-                    if (dirs[i].magnitude == 0)
-                    {
-                        UnityEditor.Handles.color = Color.clear;
-                    }
-                    else if (Vector3.Angle(dirs[i], Vector3.up) < 1)
-                    {
-                        UnityEditor.Handles.color = Color.green;
-                    }
-                    else if (Vector3.Angle(dirs[i], Vector3.right) < 1)
-                    {
-                        UnityEditor.Handles.color = Color.red;
-                    }
-                    else // Shouldn't happen, magenta indicates error
-                    {
-                        UnityEditor.Handles.color = Color.magenta;
-                    }
+                    // Get valid movement axis
+                    Vector3[] dirs = lze.LockToParentBounds ? 
+                        lze.GetValidMovementAxes() : 
+                        new []{ Vector3.up, Vector3.right, };
 
-                    // Modify dir if needed
-                    if (lzePos.x > pos.x)
+                    // Draw handles using dirs
+                    for (var i = 0; i < dirs.Length; i++)
                     {
-                        dirs[i].x *= -1;
-                    }
-                    if (lzePos.y > pos.y)
-                    {
-                        dirs[i].y *= -1;
-                    }
+                        // Skip drawing handle for invalid directions
+                        if (dirs[i].magnitude == 0)
+                        {
+                            UnityEditor.Handles.color = Color.clear;
+                            continue;
+                        }
+                    
+                        // Set handles color
+                        if (Vector3.Angle(dirs[i], Vector3.up) < 1)
+                        {
+                            UnityEditor.Handles.color = Color.green;
+                        }
+                        else if (Vector3.Angle(dirs[i], Vector3.right) < 1)
+                        {
+                            UnityEditor.Handles.color = Color.red;
+                        }
+                        else // Shouldn't happen, magenta indicates error
+                        {
+                            UnityEditor.Handles.color = Color.magenta;
+                        }
 
-                    // Draw handle and add influence to end position
-                    endLzePos += UnityEditor.Handles.Slider(lzePos, dirs[i]) - lzePos;
+                        // Modify dir if needed
+                        if (lzePos.x > pos.x)
+                        {
+                            dirs[i].x *= -1;
+                        }
+                        if (lzePos.y > pos.y)
+                        {
+                            dirs[i].y *= -1;
+                        }
+                    
+                        // Draw handle and add influence to end position
+                        handlePos = UnityEditor.Handles.Slider(lzePos, dirs[i]);
+                        endLzePos += ((ISnapToBounds)lze).RoundLocationToBounds(handlePos) - lzePos;
+                    }
+                }
+                else
+                {
+                    handlePos = UnityEditor.Handles.PositionHandle(lzePos, Quaternion.identity);
+                    endLzePos += handlePos - lzePos;
                 }
 
                 // Set new level zone entrance position to calculated end position 

@@ -6,18 +6,13 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
     public class LevelZoneEntrance : MonoBehaviour, ISnapToBounds
     {
         [field: Header("Bounds")]
-        [field: SerializeField] public Vector2 Size { get; private set; } = Vector2.one * 2;
-        [field: SerializeField] public bool TransitionToEdgeCenter { get; private set; } = true; 
+        [field: SerializeField] public Vector2 Size { get; protected set; } = Vector2.one * 2;
+        [field: SerializeField] public bool TransitionToEdgeCenter { get; protected set; } = true; 
+        [field: SerializeField] public bool LockToParentBounds { get; protected set; } = true; 
         
         // == Snapping ==
-        public Bounds SnappingBounds
-        {
-            get => owningZone.CameraBounds;
-        }
-        public Vector2 SnappingOffset
-        {
-            get => -Size / 2f;
-        }
+        public Bounds SnappingBounds => owningZone.CameraBounds;
+        public Vector2 SnappingOffset => -Size / 2f;
     
         private GameObject playerGO;
         private Transform camTransform;
@@ -157,6 +152,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             }
             else 
             {
+                // Draw debug stuff
                 if (owningZone.DrawLevelZone)
                 {
                     Vector3 pos = transform.position;
@@ -176,7 +172,10 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
                 }
             
                 // Round position to camera bounds
-                (this as ISnapToBounds).RoundPositionToBounds(transform);
+                if (LockToParentBounds)
+                {
+                    (this as ISnapToBounds).RoundPositionToBounds(transform);
+                }
             }
         }
     
