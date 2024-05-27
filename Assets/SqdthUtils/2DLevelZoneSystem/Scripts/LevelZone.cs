@@ -5,14 +5,10 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
     [RequireComponent(typeof(BoxCollider2D))]
     public class LevelZone : MonoBehaviour, ISnapToBounds
     {
-        public static class LevelZoneSettings
-        {
-            public static bool CinemachineMode { get; set; }
-            public static Vector2Int TargetAspectRatio { get; set; }
-            public static float CameraSpeed { get; set; }
-            public static float DebugLineWidth { get; set; }
-        }
-        public static float LineWidth => LevelZoneSettings.DebugLineWidth;
+        public static bool CinemachineMode { get; set; }
+        public static Vector2Int TargetAspectRatio { get; set; }
+        public static float DebugLineWidth { get; set; }
+        public static float LineWidth { get; set; }
     
         public enum ScrollDirection { Horizontal, Vertical, FollowPlayer, NoScroll }
         [Header("Behavior")]
@@ -44,12 +40,11 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             set => size = value;
         }
         [SerializeField] private Vector2 size = new Vector2(32, 32);
-        private float ScreenAspect => (float)LevelZoneSettings.TargetAspectRatio.x / 
-                                      LevelZoneSettings.TargetAspectRatio.y; 
+        private float ScreenAspect => (float)TargetAspectRatio.x / TargetAspectRatio.y; 
         float CameraHeight => Camera.main.orthographicSize * 2;
         public Vector2 CameraSize => new Vector2(CameraHeight * ScreenAspect, CameraHeight);
         public Bounds CameraBounds => new Bounds(transform.position + (Vector3)CamOffset, 
-            Size + CameraSize - LevelZonePlayer.Size);
+            Size + CameraSize);
         
         // == Snapping ==
         public Bounds SnappingBounds
@@ -281,7 +276,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             // Set player's camera position
             camTransform.position = Vector3.Lerp(
                 cPos, targetCamPos, 
-                Time.fixedDeltaTime * LevelZoneSettings.CameraSpeed
+                Time.fixedDeltaTime * player.CameraSpeed
             );
         }
 

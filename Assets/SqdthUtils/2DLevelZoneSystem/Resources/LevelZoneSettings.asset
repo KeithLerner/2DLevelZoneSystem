@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a0ee179210971264fb1cc1288e7af410, type: 3}
-  m_Name: LevelZoneSystemSettings
+  m_Name: LevelZoneSettings
   m_EditorClassIdentifier: 
+  defaultCameraSettings: {fileID: 0}
   cinemachineMode: 0
   targetAspectRatio: {x: 16, y: 9}
-  cameraSpeed: 45
   debugLineWidth: 8
