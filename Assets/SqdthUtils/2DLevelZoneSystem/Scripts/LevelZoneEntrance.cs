@@ -5,8 +5,11 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
     [RequireComponent(typeof(BoxCollider2D))]
     public class LevelZoneEntrance : MonoBehaviour, ISnapToBounds
     {
+        public enum Transition { Full, Player, Camera }
+        
         [field: Header("Bounds")]
         [field: SerializeField] public Vector2 Size { get; protected set; } = Vector2.one * 2;
+        [field: SerializeField] public Transition TransitionStyle { get; protected set; } = Transition.Camera;
         [field: SerializeField] public bool TransitionToEdgeCenter { get; protected set; } = true; 
         [field: SerializeField] public bool LockToParentBounds { get; protected set; } = true; 
         
@@ -137,10 +140,14 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             }
         
             // Transition camera
-            TransitionCamera();
+            if (TransitionStyle == Transition.Camera ||
+                TransitionStyle == Transition.Full)
+                TransitionCamera();
 
             // Transition player
-            TransitionPlayer();
+            if (TransitionStyle == Transition.Player ||
+                TransitionStyle == Transition.Full)
+                TransitionPlayer();
         }
     
 #if UNITY_EDITOR
@@ -172,7 +179,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
                 
                     // Draw line to next camera point
                     UnityEditor.Handles.color = owningZone.LevelZoneColor;
-                    UnityEditor.Handles.DrawAAPolyLine(LevelZone.LineWidth, pos, transitionPos);
+                    UnityEditor.Handles.DrawAAPolyLine(LevelZone.DebugLineWidth, pos, transitionPos);
                 }
             
                 // Round position to camera bounds

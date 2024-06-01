@@ -7,16 +7,18 @@ using Vector3 = UnityEngine.Vector3;
 
 #if UNITY_EDITOR
 
+using UnityEditor;
+
 namespace SqdthUtils._2DLevelZoneSystem.Editor
 {
-    [UnityEditor.CustomEditor(typeof(LevelZone))]
+    [CustomEditor(typeof(LevelZone))] [CanEditMultipleObjects]
     public class LevelZoneInspector : UnityEditor.Editor
     {
         public VisualTreeAsset uxml;
         private VisualElement rootElement;
     
         private EnumField scrollDirectionEnumField;
-        private FloatField cameraOffsetFloatField;
+        private Vector2Field cameraOffsetVector2Field;
         private Button randomizeColorButton;
         private Button addEntranceButton;
         private Button addNestedZoneButton;
@@ -36,17 +38,22 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
         
             // Get UI elements 
             scrollDirectionEnumField = rootElement.Q<EnumField>("ScrollDirection");
-            cameraOffsetFloatField = rootElement.Q<FloatField>("CameraOffset");
+            cameraOffsetVector2Field = rootElement.Q<Vector2Field>("CameraOffset");
             randomizeColorButton = rootElement.Q<Button>("RandomizeColor");
             addEntranceButton = rootElement.Q<Button>("AddEntrance");
             addNestedZoneButton = rootElement.Q<Button>("AddNestedZone");
-        
+            
+            // Update the cam offset field's visuals
+            if (targetLevelZone != null)
+                UpdateCameraOffsetField(targetLevelZone.scrollDirection);
+            
             // Hide cam offset if not supported by current scroll direction
             scrollDirectionEnumField.RegisterCallback<ChangeEvent<string>>(evt =>
             {
-                Enum.TryParse(evt.newValue, out LevelZone.ScrollDirection valueInt);
-                cameraOffsetFloatField.visible = LevelZone.DoesCameraOffset(valueInt);
+                Enum.TryParse(evt.newValue, out LevelZone.ScrollDirection value);
+                UpdateCameraOffsetField(value);
             });
+            
 
             // Link randomize color button to functionality
             randomizeColorButton.clickable = new Clickable(() =>
@@ -70,7 +77,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
                 go.transform.position = Random.insideUnitCircle * targetLevelZone.Size.magnitude;
 
                 // Comment the following line to stop automatically selecting the added level zone entrance
-                UnityEditor.Selection.SetActiveObjectWithContext(go, null);
+                Selection.SetActiveObjectWithContext(go, null);
             });
             
             // Link add level zone add entrance button to functionality
@@ -95,11 +102,49 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
                               targetLevelZone.Size) / 2f;
 
                 // Comment the following line to stop automatically selecting the new child level zone
-                UnityEditor.Selection.SetActiveObjectWithContext(go, null);
+                Selection.SetActiveObjectWithContext(go, null);
             });
 
             // Return the finished Inspector UI.
             return rootElement;
+        }
+
+        private void UpdateCameraOffsetField(
+            LevelZone.ScrollDirection scrollDirection)
+        {
+            FloatField x = 
+                cameraOffsetVector2Field.Q<FloatField>("unity-x-input");
+            FloatField y = 
+                cameraOffsetVector2Field.Q<FloatField>("unity-y-input");
+            switch (scrollDirection)
+            {
+                case LevelZone.ScrollDirection.Horizontal:
+                    x.style.opacity = .5f;
+                    x.isReadOnly = true;
+                    //x.pickingMode = PickingMode.Ignore;
+                    y.style.opacity = 1f;
+                    y.isReadOnly = false;
+                    //y.pickingMode = PickingMode.Position;
+                    break;
+                    
+                case LevelZone.ScrollDirection.Vertical:
+                    x.style.opacity = 1f;
+                    x.isReadOnly = false;
+                    //x.pickingMode = PickingMode.Position;
+                    y.style.opacity = .5f;
+                    y.isReadOnly = true;
+                    //y.pickingMode = PickingMode.Ignore;
+                    break;
+                    
+                default: 
+                    x.style.opacity = 1f;
+                    x.isReadOnly = false;
+                    //x.pickingMode = PickingMode.Position;
+                    y.style.opacity = 1f;
+                    y.isReadOnly = false;
+                    //y.pickingMode = PickingMode.Position;
+                    break;
+            }
         }
 
         private void OnSceneGUI()
@@ -134,19 +179,19 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
                     // Set handles color
                     if (dirs[i].magnitude == 0)
                     {
-                        UnityEditor.Handles.color = Color.clear;
+                        Handles.color = Color.clear;
                     }
                     else if (Vector3.Angle(dirs[i], Vector3.up) < 1)
                     {
-                        UnityEditor.Handles.color = Color.green;
+                        Handles.color = Color.green;
                     }
                     else if (Vector3.Angle(dirs[i], Vector3.right) < 1)
                     {
-                        UnityEditor.Handles.color = Color.red;
+                        Handles.color = Color.red;
                     }
                     else // Shouldn't happen, magenta indicates error
                     {
-                        UnityEditor.Handles.color = Color.magenta;
+                        Handles.color = Color.magenta;
                     }
 
                     // Modify dir if needed
@@ -162,7 +207,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
                     // Draw handle and add influence to end position
                     endLzPos += 
                         ((ISnapToBounds)lz).RoundLocationToBounds(
-                            UnityEditor.Handles.Slider(lzPos, dirs[i])
+                            Handles.Slider(lzPos, dirs[i])
                         ) - lzPos;
                 }    
 
@@ -194,22 +239,22 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
                         // Skip drawing handle for invalid directions
                         if (dirs[i].magnitude == 0)
                         {
-                            UnityEditor.Handles.color = Color.clear;
+                            Handles.color = Color.clear;
                             continue;
                         }
                     
                         // Set handles color
                         if (Vector3.Angle(dirs[i], Vector3.up) < 1)
                         {
-                            UnityEditor.Handles.color = Color.green;
+                            Handles.color = Color.green;
                         }
                         else if (Vector3.Angle(dirs[i], Vector3.right) < 1)
                         {
-                            UnityEditor.Handles.color = Color.red;
+                            Handles.color = Color.red;
                         }
                         else // Shouldn't happen, magenta indicates error
                         {
-                            UnityEditor.Handles.color = Color.magenta;
+                            Handles.color = Color.magenta;
                         }
 
                         // Modify dir if needed
@@ -223,13 +268,13 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
                         }
                     
                         // Draw handle and add influence to end position
-                        handlePos = UnityEditor.Handles.Slider(lzePos, dirs[i]);
+                        handlePos = Handles.Slider(lzePos, dirs[i]);
                         endLzePos += ((ISnapToBounds)lze).RoundLocationToBounds(handlePos) - lzePos;
                     }
                 }
                 else
                 {
-                    handlePos = UnityEditor.Handles.PositionHandle(lzePos, Quaternion.identity);
+                    handlePos = Handles.PositionHandle(lzePos, Quaternion.identity);
                     endLzePos += handlePos - lzePos;
                 }
 

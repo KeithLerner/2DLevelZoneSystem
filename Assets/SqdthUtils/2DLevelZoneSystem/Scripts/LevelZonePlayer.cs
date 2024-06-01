@@ -13,5 +13,14 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         [field: SerializeField] [Tooltip("The speed that the player camera moves at.")]
         public float CameraSpeed { get; set; } = 45f;
         public LevelZone CurrentZone { get; set; }
+
+        private void Start()
+        {
+            if (PlayerCamera == null)
+            {
+                PlayerCamera = new GameObject($"{gameObject.name}PlayerCamera",
+                    typeof(Camera)).GetComponent<Camera>();
+            }
+        }
     }
 }

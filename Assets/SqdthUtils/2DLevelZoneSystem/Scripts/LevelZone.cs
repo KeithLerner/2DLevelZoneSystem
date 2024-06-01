@@ -1,31 +1,32 @@
+using System.Net;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace SqdthUtils._2DLevelZoneSystem.Scripts
 {
     [RequireComponent(typeof(BoxCollider2D))]
     public class LevelZone : MonoBehaviour, ISnapToBounds
     {
-        public static bool CinemachineMode { get; set; }
         public static Vector2Int TargetAspectRatio { get; set; }
+        public static float TargetOrthographicCameraSize { get; set; }
         public static float DebugLineWidth { get; set; }
-        public static float LineWidth { get; set; }
     
         public enum ScrollDirection { Horizontal, Vertical, FollowPlayer, NoScroll }
         [Header("Behavior")]
         [Tooltip("Which direction the room will scroll in.")]
         public ScrollDirection scrollDirection;
-        [Tooltip("How far from zero the camera should align on the axis opposite scrolling direction.")]
-        [SerializeField] private float camOffset;
+        [Tooltip("Offset given to the camera.")]
+        [SerializeField] private Vector2 cameraOffset;
 
-        public Vector2 CamOffset
+        public Vector2 CameraOffset
         {
             get
             {
                 return scrollDirection switch
                 {
-                    ScrollDirection.Horizontal => Vector2.up    * camOffset,
-                    ScrollDirection.Vertical   => Vector2.right * camOffset,
-                    _                          => Vector2.zero
+                    ScrollDirection.Horizontal   => Vector2.up    * cameraOffset.y,
+                    ScrollDirection.Vertical     => Vector2.right * cameraOffset.x,
+                    _                            =>                 cameraOffset
                 };
             }
         }
@@ -41,9 +42,11 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         }
         [SerializeField] private Vector2 size = new Vector2(32, 32);
         private float ScreenAspect => (float)TargetAspectRatio.x / TargetAspectRatio.y; 
-        float CameraHeight => Camera.main.orthographicSize * 2;
+        float CameraHeight => (Camera.main != null ? 
+            Camera.main.orthographicSize : 
+            TargetOrthographicCameraSize) * 2;
         public Vector2 CameraSize => new Vector2(CameraHeight * ScreenAspect, CameraHeight);
-        public Bounds CameraBounds => new Bounds(transform.position + (Vector3)CamOffset, 
+        public Bounds CameraBounds => new Bounds(transform.position + (Vector3)CameraOffset, 
             Size + CameraSize);
         
         // == Snapping ==
@@ -53,6 +56,10 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             {
                 if (transform.parent.TryGetComponent(out LevelZone lz))
                 {
+                    if (lz.BColl == null)
+                    {
+                        lz.BColl = lz.GetComponent<BoxCollider2D>();
+                    }
                     return lz.BColl.bounds;
                 }
                 return new Bounds();
@@ -61,28 +68,28 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         public Vector2 SnappingOffset => Size / 2f;
 
         // == Debug ==
-        private const float colorAlpha = .4f; 
+        private const float ColorAlpha = .4f; 
         public bool DrawLevelZone => drawZone;
         [field: Header("Visualization")]
         [SerializeField] private bool drawZone = true;
-        public static bool DoesCameraOffset(ScrollDirection _scrollDirection)
+        public bool DoesLinearCameraOffset()
         {
-            return _scrollDirection == ScrollDirection.Horizontal || _scrollDirection == ScrollDirection.Vertical;
+            return scrollDirection == ScrollDirection.Horizontal || scrollDirection == ScrollDirection.Vertical;
         }
-        [SerializeField] private Color overrideLevelZoneColor = new Color(1,1,1,colorAlpha);
+        [SerializeField] private Color overrideLevelZoneColor = new Color(1,1,1,ColorAlpha);
         public Color LevelZoneColor => 
-            overrideLevelZoneColor != new Color(1,1,1,colorAlpha) ? 
+            overrideLevelZoneColor != new Color(1,1,1,ColorAlpha) ? 
                 overrideLevelZoneColor :
                 scrollDirection switch
                 {
-                    ScrollDirection.Horizontal => new Color(.2f, .2f, 1, colorAlpha),
-                    ScrollDirection.Vertical => new Color(1, .2f, .2f, colorAlpha),
-                    ScrollDirection.FollowPlayer => new Color(.2f, 1, .2f, colorAlpha),
-                    _ => new Color(.2f, .2f, .2f, colorAlpha)
+                    ScrollDirection.Horizontal => new Color(.2f, .2f, 1, ColorAlpha),
+                    ScrollDirection.Vertical => new Color(1, .2f, .2f, ColorAlpha),
+                    ScrollDirection.FollowPlayer => new Color(.2f, 1, .2f, ColorAlpha),
+                    _ => new Color(.2f, .2f, .2f, ColorAlpha)
                 };
         public void RandomizeColor()
         {
-            overrideLevelZoneColor = new Color(Random.value, Random.value, Random.value, colorAlpha);
+            overrideLevelZoneColor = new Color(Random.value, Random.value, Random.value, ColorAlpha);
         }
 
         public BoxCollider2D BColl { get; private set; }
@@ -241,33 +248,56 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             {
                 // This level zone scrolls horizontally
                 ScrollDirection.Horizontal => 
-                    new Vector2(pPos.x, laPos.y + camOffset),
+                    new Vector2(pPos.x, laPos.y),
             
                 // This level zone scrolls vertically
                 ScrollDirection.Vertical => 
-                    new Vector2(laPos.x + camOffset, pPos.y),
+                    new Vector2(laPos.x, pPos.y),
             
                 ScrollDirection.FollowPlayer =>
                     new Vector2(pPos.x, pPos.y),
             
                 // This level zone does not scroll
-                _ => new Vector2(laPos.x, laPos.y),
+                _ => new Vector2(laPos.x, laPos.y)
             };
-
-            // Set camera target position if not in zone bounds
+            
+            // Add offset to target camera position
+            targetCamPos += (Vector3)CameraOffset;
+            
+            // Set target camera position if player is not in zone bounds
             bool isInside = IsInsideLevelZone(pPos);
             if (!isInside)
             {
-                // Update target camera position depending on if this zone
-                // forces edge center transitions
-                targetCamPos = forceEdgeCenters ? 
-                    GetNearestEdgeCenter(cPos) :
-                    GetNearestEdgePoint(cPos);
-                
                 // Update player's current zone to null
                 // Allows zones to neighbor each other without making use of
                 // entrances
                 player.CurrentZone = null;
+
+                // No scroll zones should keep their previously set target position
+                if (scrollDirection != ScrollDirection.NoScroll)
+                {
+                    // Determine and store if camera offset is diagonal
+                    bool diagonalOffset =
+                        CameraOffset.x != 0 && CameraOffset.y != 0;
+
+                    // Update target camera position depending on if this zone
+                    // forces edge center transitions
+                    // diagonal offsets can not use camera position as reference
+                    // because the camera lerps away by adding offset to iself 
+                    // from its nearest edge center/point
+                    targetCamPos = forceEdgeCenters
+                        ? GetNearestEdgeCenter(diagonalOffset ? pPos : cPos)
+                        : GetNearestEdgePoint(diagonalOffset ? pPos : cPos);
+
+                    // Add diagonal offsets back to target position
+                    // linear offsets have better camera positioning and don't 
+                    // require additional offset addition, in fact is causes camera
+                    // jitters between neighboring level zones
+                    if (diagonalOffset)
+                    {
+                        targetCamPos += (Vector3)CameraOffset;
+                    }
+                }
             }
             
             // Fix target camera position's Z value
@@ -299,22 +329,22 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             switch (scrollDirection)
             {
                 case ScrollDirection.Horizontal:
-                    UnityEditor.Handles.DrawAAPolyLine(LineWidth, 
-                        bCollBounds.center + Vector3.up * camOffset - Vector3.right * bCollBounds.extents.x, 
-                        bCollBounds.center + Vector3.up * camOffset + Vector3.right * bCollBounds.extents.x);
+                    UnityEditor.Handles.DrawAAPolyLine(DebugLineWidth, 
+                        bCollBounds.center + (Vector3)CameraOffset - Vector3.right * bCollBounds.extents.x, 
+                        bCollBounds.center + (Vector3)CameraOffset + Vector3.right * bCollBounds.extents.x);
                     break;
             
                 case ScrollDirection.Vertical:
-                    UnityEditor.Handles.DrawAAPolyLine(LineWidth, 
-                        bCollBounds.center + Vector3.right * camOffset - Vector3.up * bCollBounds.extents.y, 
-                        bCollBounds.center + Vector3.right * camOffset + Vector3.up * bCollBounds.extents.y);
+                    UnityEditor.Handles.DrawAAPolyLine(DebugLineWidth, 
+                        bCollBounds.center + (Vector3)CameraOffset - Vector3.up * bCollBounds.extents.y, 
+                        bCollBounds.center + (Vector3)CameraOffset + Vector3.up * bCollBounds.extents.y);
                     break;
             
                 default: break;
             }
-
+            
             // Round position to camera bounds
-            if (transform.parent.TryGetComponent(out LevelZone lz))
+            if (transform.parent.GetComponent<LevelZone>() != null)
             {
                 (this as ISnapToBounds).RoundPositionToBounds(transform);
             }
@@ -326,21 +356,20 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             // Early exit for don't draw room
             if (!DrawLevelZone) return;
             
+            // Might make tiers or flags for debug info at some point
             // Early exit for zones without active children using their snapping
-            if (transform.childCount == 0) return;
-            ISnapToBounds[] snapChildren =
-                transform.GetComponentsInChildren<ISnapToBounds>(false);
-            if (snapChildren.Length < 2) return;
+            // ISnapToBounds[] snapChildren =
+            //     transform.GetComponentsInChildren<ISnapToBounds>(false);
+            // if (snapChildren.Length < 2 && 
+            //     scrollDirection != ScrollDirection.FollowPlayer) return;
             
             
             Start();
         
             // Draw camera frame bounds from zone
             Gizmos.color = Color.black;
-            Gizmos.DrawWireCube(transform.position + 
-                    (DoesCameraOffset(scrollDirection) ? CamOffset : Vector3.zero),
-                CameraBounds.size
-            );
+            Gizmos.DrawWireCube(
+                transform.position + (Vector3)CameraOffset, CameraBounds.size);
             Gizmos.color = Color.clear;
         }
     
