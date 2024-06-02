@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
@@ -410,9 +409,13 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
                     {
                         c.x = a.x; c.y = b.y;
                     }
-                    else // a.x >= b.x
+                    else if (a.x >= b.x)
                     {
                         c.x = b.x; c.y = a.y;
+                    }
+                    else
+                    {
+                        c = b;
                     }
                 }
                 else // a.y >= b.y
@@ -421,9 +424,13 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
                     {
                         c.x = b.x; c.y = a.y;
                     }
-                    else // a.x >= b.x
+                    else if (a.x >= b.x)
                     {
                         c.x = a.x; c.y = b.y;
+                    }
+                    else
+                    {
+                        c = b;
                     }
                 }
                 
@@ -507,17 +514,20 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
                 
                 // Fun extra debug line for those that like seeing the
                 // numbered vertices of the full camera bounds
-                //UnityEditor.Handles.Label(a, i.ToString());
+                UnityEditor.Handles.Label(a, i.ToString());
             }
             
             // Draw perimeter edges
-            Handles.color = LevelZoneColor;
-            Handles.Label(perimeterPoints[0], gameObject.name, new GUIStyle()
-            {
-                fontSize = 10,
-                alignment = TextAnchor.UpperRight
-            });
-            Handles.DrawAAPolyLine(DebugLineWidth, perimeterEdges.ToArray());
+            UnityEditor.Handles.color = LevelZoneColor;
+            UnityEditor.Handles.Label(perimeterPoints[0], gameObject.name, 
+                new GUIStyle
+                {
+                    fontSize = 10,
+                    alignment = TextAnchor.UpperRight
+                }
+            );
+            UnityEditor.Handles.DrawAAPolyLine(DebugLineWidth, 
+                perimeterEdges.ToArray());
         }
 
         /// <summary>
@@ -535,7 +545,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             // Early exit for zones that aren't at their parental hierarchy
             if (transform.parent.GetComponent<LevelZone>() != null) return;
 
-            Gizmos.color = new Color(.8f, .8f, .8f, .2f);
+            Gizmos.color = Color.black;
             Gizmos.DrawWireCube(CameraBounds.center, CameraBounds.size);
         }
     
