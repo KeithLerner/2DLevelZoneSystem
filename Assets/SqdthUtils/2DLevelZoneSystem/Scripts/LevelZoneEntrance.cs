@@ -207,7 +207,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
                 Gizmos.DrawWireCube(transform.position, bColl.size);
 
                 // Call parent's OnDrawGizmoSelected
-                transform.parent.GetComponent<LevelZone>().DrawGizmosSelected();
+                transform.parent.GetComponent<LevelZone>().DrawCameraBoundsGizmo();
             }
             else
             {

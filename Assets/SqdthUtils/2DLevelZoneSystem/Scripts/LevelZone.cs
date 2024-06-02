@@ -1,6 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Text;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 namespace SqdthUtils._2DLevelZoneSystem.Scripts
 {
@@ -311,7 +317,139 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         }
 
 #if UNITY_EDITOR
-    
+
+        private Bounds[] GetAllFamilialDebugBounds()
+        {
+            // Initialize return list
+            List<Bounds> results = new List<Bounds>{ CameraBounds };
+            
+            // Get all child bounds
+            LevelZone[] family = GetComponentsInChildren<LevelZone>();
+            for (int i = 0; i < family.Length; i++)
+            {
+                // Get level zone camera bounds of i
+                results.Add(family[i].CameraBounds);
+            }
+
+            return results.ToArray();
+        }
+
+        private List<Vector2> GetAllFamilialBoundingDebugCorners()
+        {
+            // Initialize return list
+            List<Vector2> results = new List<Vector2>();
+
+            foreach (Bounds bounds in GetAllFamilialDebugBounds())
+            {
+                results.Add(bounds.min); // bottom left
+                results.Add(new Vector2(bounds.min.x, bounds.max.y)); // top left
+                results.Add(bounds.max); // top right
+                results.Add(new Vector2(bounds.max.x, bounds.min.y)); // bottom right
+            }
+
+            return results;
+        }
+        
+        private Vector2[] GetPerimeterPointList(List<Vector2> points, Bounds[] boundsArray)
+        {
+            // Create a set for points along the perimeter
+            HashSet<Vector2> pointsSet = new HashSet<Vector2>();
+            foreach (Vector2 point in points)
+            {
+                // Check each point to see if it is inside a provided bounds
+                bool contained = false;
+                foreach (Bounds bounds in boundsArray)
+                {
+                    // if the bounds contain the point exclusively
+                    if (point.x < bounds.max.x && point.x > bounds.min.x &&
+                        Mathf.Abs(point.x - bounds.max.x) > .0001f &&
+                        point.y < bounds.max.y && point.y > bounds.min.y &&
+                        Mathf.Abs(point.y - bounds.max.y) > .0001f)
+                    {
+                        // This was contained within a bounds
+                        contained = true;
+                        
+                        // Early escape
+                        break;
+                    }
+                }
+                
+                // Add point if it is not inside any other bounds
+                if (!contained)
+                    pointsSet.Add(point);
+            }
+
+            // Convert and sort the points counterclockwise from
+            // quadrant 3 to quadrant 2
+            List<Vector2> pointsList = pointsSet.ToArray().ToList();
+            pointsList.Sort((a, b) => {
+                float angleA = Mathf.Atan2(a.y - boundsArray[0].center.y, a.x - boundsArray[0].center.x);
+                float angleB = Mathf.Atan2(b.y - boundsArray[0].center.y, b.x - boundsArray[0].center.x);
+                return angleA.CompareTo(angleB);
+            });
+
+            // Bridge points together, gaps created by leaving out
+            // contained points earlier
+            pointsSet = new HashSet<Vector2>();
+            for (int i = 0; i < pointsList.Count; i++)
+            {
+                // Get points to bridge
+                Vector2 a = pointsList[i];
+                int bi = i + 1;
+                // Loop back around if bi would be out of bounds,
+                // should only happen once
+                if (bi >= pointsList.Count)
+                    bi = 0;
+                Vector2 b = pointsList[bi];
+                
+                // Create bridge point
+                Vector2 c = new Vector2();
+                if (a.y < b.y)
+                {
+                    if (a.x < b.x)
+                    {
+                        c.x = a.x; c.y = b.y;
+                    }
+                    else // a.x >= b.x
+                    {
+                        c.x = b.x; c.y = a.y;
+                    }
+                }
+                else // a.y >= b.y
+                {
+                    if (a.x < b.x)
+                    {
+                        c.x = b.x; c.y = a.y;
+                    }
+                    else // a.x >= b.x
+                    {
+                        c.x = a.x; c.y = b.y;
+                    }
+                }
+                
+                // Add point i (a)
+                pointsSet.Add(a);
+                // Add the bridge point (c) between i (a) and i + 1 (b)
+                // B will be added as a in the next iteration of the for loop
+                pointsSet.Add(c);
+            }
+            
+            // Return an array of the unique points sorted counterclockwise
+            // from quadrant 3 to quadrant 2 
+            return pointsSet.ToArray();
+        }
+
+        private void OnGUI()
+        {
+            Start();
+            
+            // Round position to camera bounds
+            if (transform.parent.GetComponent<LevelZone>() != null)
+            {
+                (this as ISnapToBounds).RoundPositionToBounds(transform);
+            }
+        }
+
         private void OnDrawGizmos()
         {
             // Early exit for don't draw room
@@ -343,34 +481,62 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
                 default: break;
             }
             
-            // Round position to camera bounds
-            if (transform.parent.GetComponent<LevelZone>() != null)
+            // Early exit for zones that aren't at their parental hierarchy
+            // The remaining debug visuals are only for the parent most level zone 
+            if (transform.parent.GetComponent<LevelZone>() != null) return;
+            
+            // Get list of perimeter points
+            Vector2[] perimeterPoints = 
+                GetPerimeterPointList(GetAllFamilialBoundingDebugCorners(), 
+                    GetAllFamilialDebugBounds());
+
+            // Create list of perimeter edges
+            List<Vector3> perimeterEdges = new List<Vector3>();
+            for (var i = 0; i < perimeterPoints.Length; i++)
             {
-                (this as ISnapToBounds).RoundPositionToBounds(transform);
+                // Get points to make line from
+                Vector3 a = perimeterPoints[i];
+                int bi = i + 1;
+                if (bi >= perimeterPoints.Length)
+                    bi = 0;
+                Vector3 b = perimeterPoints[bi];
+                
+                // Add points in point pair format
+                perimeterEdges.Add(a);
+                perimeterEdges.Add(b);
+                
+                // Fun extra debug line for those that like seeing the
+                // numbered vertices of the full camera bounds
+                //UnityEditor.Handles.Label(a, i.ToString());
             }
+            
+            // Draw perimeter edges
+            Handles.color = LevelZoneColor;
+            Handles.Label(perimeterPoints[0], gameObject.name, new GUIStyle()
+            {
+                fontSize = 10,
+                alignment = TextAnchor.UpperRight
+            });
+            Handles.DrawAAPolyLine(DebugLineWidth, perimeterEdges.ToArray());
         }
 
-        public void DrawGizmosSelected() => OnDrawGizmosSelected();
+        /// <summary>
+        /// <b> FOR LEVEL ZONE ENTRANCE USE ONLY. </b>
+        /// </summary>
+        public void DrawCameraBoundsGizmo() => OnDrawGizmosSelected();
+        
         private void OnDrawGizmosSelected()
         {
             // Early exit for don't draw room
             if (!DrawLevelZone) return;
-            
-            // Might make tiers or flags for debug info at some point
-            // Early exit for zones without active children using their snapping
-            // ISnapToBounds[] snapChildren =
-            //     transform.GetComponentsInChildren<ISnapToBounds>(false);
-            // if (snapChildren.Length < 2 && 
-            //     scrollDirection != ScrollDirection.FollowPlayer) return;
-            
-            
+
             Start();
-        
-            // Draw camera frame bounds from zone
-            Gizmos.color = Color.black;
-            Gizmos.DrawWireCube(
-                transform.position + (Vector3)CameraOffset, CameraBounds.size);
-            Gizmos.color = Color.clear;
+            
+            // Early exit for zones that aren't at their parental hierarchy
+            if (transform.parent.GetComponent<LevelZone>() != null) return;
+
+            Gizmos.color = new Color(.8f, .8f, .8f, .2f);
+            Gizmos.DrawWireCube(CameraBounds.center, CameraBounds.size);
         }
     
 #endif
