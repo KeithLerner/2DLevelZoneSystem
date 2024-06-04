@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -49,8 +50,8 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         public Bounds CameraBounds => new Bounds(BColl.bounds.center + (Vector3)CameraOffset, 
             scrollDirection switch 
             {
-                ScrollDirection.NoScroll => CameraSize,
-                _ => Size + CameraSize
+                ScrollDirection.FollowPlayer => Size + CameraSize,
+                _ => CameraSize,
             }
         );
         
@@ -313,6 +314,8 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
 
 #if UNITY_EDITOR
 
+        #region Perimeter Outline
+        
         private Bounds[] GetAllFamilialCameraBounds()
         {
             // Initialize return list
@@ -344,269 +347,193 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
 
             return results.ToArray();
         }
+        
+        private struct Edge
+        {
+            public Vector2 Item1;
+            public Vector2 Item2;
+
+            public Edge(Vector2 start, Vector2 end)
+            {
+                Item1 = start;
+                Item2 = end;
+            }
+        }
 
         private Vector2[] GetPerimeterPoints2(Bounds[] boundsArray)
         {
-            // Get all edges of bounds
-            List<(Vector2, Vector2)> horizontalEdges = new List<(Vector2, Vector2)>();
-            List<(Vector2, Vector2)> verticalEdges = new List<(Vector2, Vector2)>();
+            // Set up storage for all points (corners and intersections) of
+            // bounds union shape
+            HashSet<Vector2> pointSet = new HashSet<Vector2>();
+            
+            // Get all edges and add valid corners of bounds to the point set
+            List<Edge> horizontalEdges = new List<Edge>();
+            List<Edge> verticalEdges = new List<Edge>();
             foreach (Bounds bounds in boundsArray)
             {
                 // Bottom edge
                 horizontalEdges.Add(
-                    (bounds.min, new Vector2(bounds.max.x, bounds.min.y))
+                    new Edge(bounds.min, new Vector2(bounds.max.x, bounds.min.y))
                 ); 
                 // Top edge
                 horizontalEdges.Add(
-                    (new Vector2(bounds.min.x, bounds.max.y), bounds.max)
+                    new Edge(new Vector2(bounds.min.x, bounds.max.y), bounds.max)
                 ); 
                 // Left edge
                 verticalEdges.Add(
-                    (bounds.min, new Vector2(bounds.min.x, bounds.max.y))
+                    new Edge(bounds.min, new Vector2(bounds.min.x, bounds.max.y))
                 ); 
                 // Right edge
                 verticalEdges.Add(
-                    (new Vector2(bounds.max.x, bounds.min.y), bounds.max)
+                    new Edge(new Vector2(bounds.max.x, bounds.min.y), bounds.max)
                 ); 
+                
+                // Get corners
+                bool[] validCorner = new bool[] { true, true, true, true };
+                Vector2[] corners = new Vector2[]
+                {
+                    bounds.min, 
+                    new Vector2(bounds.min.x, bounds.max.y),
+                    bounds.max, 
+                    new Vector2(bounds.max.x, bounds.min.y)
+                };
+                
+                // Check this bound against all other bounds
+                foreach (Bounds boundsToCheckAgainst in boundsArray)
+                {
+                    // Determine if a corner is valid
+                    // A corner is valid if it is not contained in other bounds (exclusive)
+                    for (var i = 0; i < corners.Length; i++)
+                    {
+                        var corner = corners[i];
+                        if (corner.x < boundsToCheckAgainst.max.x &&
+                            corner.x > boundsToCheckAgainst.min.x &&
+                            Mathf.Abs(corner.x - boundsToCheckAgainst.max.x) >
+                            .0001f &&
+                            corner.y < boundsToCheckAgainst.max.y &&
+                            corner.y > boundsToCheckAgainst.min.y &&
+                            Mathf.Abs(corner.y - boundsToCheckAgainst.max.y) >
+                            .0001f)
+                        {
+                            validCorner[i] = false;
+                        }
+                    }
+                }
+                
+                // Add valid corners to the point set
+                if (bounds != CameraBounds &&
+                    validCorner[0] &&
+                    validCorner[1] &&
+                    validCorner[2] &&
+                    validCorner[3])
+                {
+                    Gizmos.color = Color.magenta;
+                    Gizmos.DrawCube(bounds.center, bounds.size);
+                    Gizmos.DrawCube(CameraBounds.center, CameraBounds.size);
+                }
+                for (int i = 0; i < corners.Length; i++)
+                {
+                    if (validCorner[i])
+                    {
+                        pointSet.Add(corners[i]);
+                    }
+                }
             }
             
-            // Trim horizontal edges
-            for (int i = 0; i < horizontalEdges.Count; i++)
+            // Determine and Add intersecting points to point set
+            foreach (var t in horizontalEdges)
             {
                 // Get i horizontal edge
-                (Vector2, Vector2) hEdge = horizontalEdges[i];
+                Edge hEdge = t;
                 
                 // Get Y value of horizontal edge
                 float hY = hEdge.Item1.y;
                 
                 // Check against each vertical edge
-                for (int j = 0; j < verticalEdges.Count; j++)
+                foreach (var vEdge in verticalEdges)
                 {
-                    // Get j vertical edge
-                    (Vector2, Vector2) vEdge = verticalEdges[j];
-                    
                     // Get X value of vertical edge
                     float vX = vEdge.Item1.x;
                     
-                    // If vertical edge exists between horizontal edge points
+                    // If vertical edge exists between horizontal edge points (exclusive)
                     bool containedX = hEdge.Item1.x < vX && vX < hEdge.Item2.x;
-                    // If horizontal edge exists between vertical edge points
+                    // If horizontal edge exists between vertical edge points (exclusive)
                     bool containedY = vEdge.Item1.y < hY && hY < vEdge.Item2.y;
                     
                     // If intersecting
-                    // Exclusive because of contained calculations being exclusive
                     if (containedX && containedY)
                     {
-                        // Correct nearest point on horizontal edge
-                        // to match intersection X value
-                        if (Mathf.Abs(hEdge.Item1.x - vX) <
-                            Mathf.Abs(hEdge.Item2.x - vX)) // Left edge point closer
-                        {
-                            hEdge.Item1.x = vX;
-                        }
-                        else // Right edge point closer or equal distance
-                        {
-                            hEdge.Item2.x = vX;
-                        }
-                    }
-                }
-            }
-            
-            // Trim vertical edges
-            for (int i = 0; i < verticalEdges.Count; i++)
-            {
-                // Get i vertical edge
-                (Vector2, Vector2) vEdge = verticalEdges[i];
-                
-                // Get X value of vertical edge
-                float vX = vEdge.Item1.x;
-                
-                // Check against each horizontal edge
-                for (int j = 0; j < horizontalEdges.Count; j++)
-                {
-                    // Get j horizontal edge
-                    (Vector2, Vector2) hEdge = horizontalEdges[j];
-                    
-                    // Get Y value of vertical edge
-                    float hY = hEdge.Item1.y;
-                    
-                    // If vertical edge exists between horizontal edge points
-                    bool containedX = hEdge.Item1.x <= vX && vX <= hEdge.Item2.x;
-                    // If horizontal edge exists between vertical edge points
-                    bool containedY = vEdge.Item1.y <= hY && hY <= vEdge.Item2.y;
-                    
-                    // If intersecting
-                    // Inclusive because of contained calculations being inclusive
-                    if (containedX && containedY)
-                    {
-                        // Correct nearest point on horizontal edge
-                        // to match intersection X value
-                        if (Mathf.Abs(vEdge.Item1.y - hY) <
-                            Mathf.Abs(vEdge.Item2.y - hY)) // Left edge point closer
-                        {
-                            vEdge.Item1.y = hY;
-                        }
-                        else // Right edge point closer or equal distance
-                        {
-                            vEdge.Item2.y = hY;
-                        }
+                        // Add nearest point on horizontal edge to point set
+                        pointSet.Add(new Vector2(vX, hY));
                     }
                 }
             }
 
-            List<Vector2> results = new List<Vector2>();
-            foreach ((Vector2, Vector2) hEdge in horizontalEdges)
+            // Make a list from the point set
+            List<Vector2> pointList = new List<Vector2>();
+            foreach (Vector2 point in pointSet)
             {
-                results.Add(hEdge.Item1);
-                results.Add(hEdge.Item2);
-            }
-            foreach ((Vector2, Vector2) vEdge in verticalEdges)
-            {
-                results.Add(vEdge.Item1);
-                results.Add(vEdge.Item2);
+                pointList.Add(point);
             }
 
-            return results.ToArray();
+            return MinimizeDistancePath(pointList).ToArray();
         }
-        
-        private Vector2[] GetPerimeterPoints(Bounds[] boundsArray)
+
+        private static List<Vector2> MinimizeDistancePath(List<Vector2> points)
         {
-            // Get all bounds corner points
-            Vector2[] points = GetAllFamilialCameraBoundsCorners();
-            
-            // Create a set for points along the perimeter
-            HashSet<Vector2> pointsSet = new HashSet<Vector2>();
-            foreach (Vector2 point in points)
-            {
-                // Check each point to see if it is inside a provided bounds
-                bool contained = false;
-                foreach (Bounds bounds in boundsArray)
-                {
-                    // if the bounds contain the point exclusively
-                    if (point.x < bounds.max.x && point.x > bounds.min.x &&
-                        Mathf.Abs(point.x - bounds.max.x) > .0001f &&
-                        point.y < bounds.max.y && point.y > bounds.min.y &&
-                        Mathf.Abs(point.y - bounds.max.y) > .0001f)
-                    {
-                        // This was contained within a bounds
-                        contained = true;
-                        
-                        // Early escape
-                        break;
-                    }
-                }
-                
-                // Add point if it is not inside any other bounds
-                if (!contained)
-                    pointsSet.Add(point);
-            }
+            List<Vector2> path = new List<Vector2>();
+            HashSet<Vector2> visited = new HashSet<Vector2>();
 
-            // Convert and sort the points counterclockwise from
-            // quadrant 3 to quadrant 2
-            List<Vector2> pointsList = new List<Vector2>();
-            foreach (Vector2 point in pointsSet)
-            {
-                pointsList.Add(point);
-            }
-            pointsList.Sort((a, b) => {
-                float angleA = Mathf.Atan2(a.y - boundsArray[0].center.y, a.x - boundsArray[0].center.x);
-                float angleB = Mathf.Atan2(b.y - boundsArray[0].center.y, b.x - boundsArray[0].center.x);
-                return angleA.CompareTo(angleB);
-            });
-            
-            // Adjust order to minimize the distance between sequential points
-            List<Vector2> orderedPoints = new List<Vector2> { pointsList[0] };
-            pointsList.RemoveAt(0);
-            while (pointsList.Count > 0)
-            {
-                Vector2 lastPoint = orderedPoints[^1]; // Shorthand for orderedPoints[orderedPoints.Count - 1]
-                float minDistance = float.MaxValue;
-                Vector2 nearestPoint = Vector2.zero;
-                int nearestIndex = -1;
+            // Start from the first point in the list
+            Vector2 currentPoint = points[0];
+            path.Add(currentPoint);
+            visited.Add(currentPoint);
 
-                // Loop through each point and determine the nearest point to the
-                // current point in the while loop
-                for (int i = 0; i < pointsList.Count; i++)
+            // Repeat until all points are visited
+            int iterationCount = 0;
+            int maxIterCount = 3;
+            while (visited.Count < points.Count &&
+                   iterationCount < maxIterCount)
+            {
+                Vector2 closestPoint = Vector2.zero;
+                float shortestDistance = Mathf.Infinity;
+
+                // Find the closest unvisited point
+                foreach (Vector2 point in points)
                 {
-                    // Get distance between two points
-                    float distance = Vector2.Distance(lastPoint, pointsList[i]);
-                    
-                    // If distance is new min
-                    if (distance < minDistance)
+                    bool axisAligned = (point - currentPoint).x != 0 ^
+                                       (point - currentPoint).y != 0;
+                    if (!visited.Contains(point) && axisAligned)
                     {
-                        // Store this point as the nearest point and index
-                        nearestPoint = pointsList[i];
-                        nearestIndex = i;
-                        // Update the min distance value
-                        minDistance = distance;
+                        float distance = Vector2.Distance(currentPoint, point);
+                        if (distance < shortestDistance)
+                        {
+                            closestPoint = point;
+                            shortestDistance = distance;
+                            iterationCount = 0;
+                        }
                     }
                 }
 
-                // Add the nearest point to the ordered list
-                orderedPoints.Add(nearestPoint);
+                // Move to the closest point
+                currentPoint = closestPoint;
+                path.Add(currentPoint);
+                visited.Add(currentPoint);
                 
-                // Remove the nearest point from the remaining points to order 
-                pointsList.RemoveAt(nearestIndex);
+                // Count iteration
+                iterationCount++;
             }
-            
-            // Bridge points together, gaps created by leaving out
-            // contained points earlier
-            pointsSet = new HashSet<Vector2>();
-            for (int i = 0; i < orderedPoints.Count; i++)
+
+            if (iterationCount >= maxIterCount)
             {
-                // Get points to bridge
-                Vector2 a = orderedPoints[i];
-                int bi = i + 1;
-                // Loop back around if bi would be out of bounds,
-                // should only happen once
-                if (bi >= orderedPoints.Count)
-                    bi = 0;
-                Vector2 b = orderedPoints[bi];
-                
-                // Create bridge point
-                Vector2 ab = new Vector2();
-                if (a.y < b.y)
-                {
-                    if (a.x < b.x)
-                    {
-                        ab.x = a.x; ab.y = b.y;
-                    }
-                    else // a.x >= b.x
-                    {
-                        ab.x = b.x; ab.y = a.y;
-                    }
-                }
-                else // a.y >= b.y
-                {
-                    if (a.x < b.x)
-                    {
-                        ab.x = b.x; ab.y = a.y;
-                    }
-                    else // a.x >= b.x
-                    {
-                        ab.x = a.x; ab.y = b.y;
-                    }
-                }
-                
-                // Add point i (a)
-                pointsSet.Add(a);
-                
-                // If point is not already in point list,
-                // add the bridge point (ab) between i (a) and i + 1 (b),
-                // b will be added as a in the next iteration of the for loop
-                if (!pointsList.Contains(ab)) pointsSet.Add(ab);
+                return new List<Vector2>();
             }
-            
-            // Convert the points to a list again
-            pointsList = new List<Vector2>();
-            foreach (Vector2 point in pointsSet)
-            {
-                pointsList.Add(point);
-            }
-            
-            // Return an array of the ordered points list
-            return pointsList.ToArray();
+
+            return path;
         }
+
+        #endregion
+        
 
         private void OnGUI()
         {
@@ -654,17 +581,9 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             // The remaining debug visuals are only for the parent most level zone 
             if (transform.parent.GetComponent<LevelZone>() != null) return;
             
-            // TESTING NEW PERIMETER DRAW METHOD
-            Vector2[] points = GetPerimeterPoints2(GetAllFamilialCameraBounds());
-            foreach (var point in points)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawSphere(point, .5f);
-            }
-            
             // Get list of perimeter points
             Vector2[] perimeterPoints = 
-                GetPerimeterPoints(GetAllFamilialCameraBounds());
+                GetPerimeterPoints2(GetAllFamilialCameraBounds());
 
             // Create list of perimeter edges
             List<Vector3> perimeterEdges = new List<Vector3>();
@@ -687,6 +606,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             }
             
             // Draw perimeter edges
+            if (perimeterPoints.Length == 0) return;
             UnityEditor.Handles.color = LevelZoneColor;
             UnityEditor.Handles.Label(perimeterPoints[0], gameObject.name, 
                 new GUIStyle

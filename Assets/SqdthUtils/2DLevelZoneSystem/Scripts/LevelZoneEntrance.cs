@@ -88,18 +88,38 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
 
         protected virtual void TransitionCamera()
         {
-            Vector3 endPos = TransitionToEdgeCenter || owningZone.ForceEdgeCenters ?
-                owningZone.GetNearestEdgeCenter(transform.position) :
-                owningZone.GetNearestEdgePoint(transform.position);
+            Vector3 endPos;
+            if (owningZone.scrollDirection ==
+                LevelZone.ScrollDirection.NoScroll)
+            {
+                endPos = owningZone.CameraBounds.center;
+            }
+            else
+            {
+                endPos = TransitionToEdgeCenter || owningZone.ForceEdgeCenters ?
+                    owningZone.GetNearestEdgeCenter(transform.position) :
+                    owningZone.GetNearestEdgePoint(transform.position);
+            }
+            
             endPos.z = camTransform.position.z;
             camTransform.position = endPos;
         }
 
         protected virtual void TransitionPlayer()
         {
-            Vector3 endPos = TransitionToEdgeCenter || owningZone.ForceEdgeCenters ?
-                owningZone.GetNearestEdgeCenter(transform.position) :
-                owningZone.GetNearestEdgePoint(transform.position);
+            Vector3 endPos;
+            if (owningZone.scrollDirection ==
+                LevelZone.ScrollDirection.NoScroll)
+            {
+                endPos = owningZone.CameraBounds.center;
+            }
+            else
+            {
+                endPos = TransitionToEdgeCenter || owningZone.ForceEdgeCenters ?
+                    owningZone.GetNearestEdgeCenter(transform.position) :
+                    owningZone.GetNearestEdgePoint(transform.position);
+            }
+            
             endPos.z = owningZone.transform.position.z;
             playerGO.transform.position = endPos;
         }
