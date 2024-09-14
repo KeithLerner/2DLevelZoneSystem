@@ -1,5 +1,4 @@
 using System;
-using SqdthUtils._2DLevelZoneSystem.Scripts;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
@@ -8,15 +7,17 @@ using Vector3 = UnityEngine.Vector3;
 #if UNITY_EDITOR
 
 using UnityEditor;
+using UnityEditor.UIElements;
 
-namespace SqdthUtils._2DLevelZoneSystem.Editor
+namespace SqdthUtils
 {
     [CustomEditor(typeof(LevelZone))] [CanEditMultipleObjects]
-    public class LevelZoneInspector : UnityEditor.Editor
+    public class LevelZoneInspector : Editor
     {
         public VisualTreeAsset uxml;
         private VisualElement rootElement;
-    
+
+        private ToolbarToggle snapLockToolbarToggle;
         private EnumField scrollDirectionEnumField;
         private Vector2Field cameraOffsetVector2Field;
         private Button randomizeColorButton;
@@ -36,12 +37,16 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
             // Load from default reference.
             uxml.CloneTree(rootElement);
         
-            // Get UI elements 
+            // Get UI elements
+            snapLockToolbarToggle = rootElement.Q<ToolbarToggle>("SnapLock");
             scrollDirectionEnumField = rootElement.Q<EnumField>("ScrollDirection");
             cameraOffsetVector2Field = rootElement.Q<Vector2Field>("CameraOffset");
             randomizeColorButton = rootElement.Q<Button>("RandomizeColor");
             addEntranceButton = rootElement.Q<Button>("AddEntrance");
             addNestedZoneButton = rootElement.Q<Button>("AddNestedZone");
+
+            snapLockToolbarToggle.RegisterCallback<ChangeEvent<bool>>(
+                evt => ((ISnapToBounds)targetLevelZone).Lock = evt.newValue);
             
             // Update the cam offset field's visuals
             if (targetLevelZone != null)

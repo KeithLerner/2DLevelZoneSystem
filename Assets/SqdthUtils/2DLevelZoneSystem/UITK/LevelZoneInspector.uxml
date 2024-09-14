@@ -1,7 +1,10 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
     <ui:Foldout text="Behavior" name="BehaviorFoldout" binding-path="m_BehaviorFoldout" class="unity-base-field__aligned">
+        <uie:Toolbar>
+            <uie:ToolbarToggle focusable="false" label="Snap Lock" name="SnapLock" tooltip="When snap lock is enabled, this will not snap to bounds of a parent" style="flex-wrap: wrap;" />
+        </uie:Toolbar>
         <ui:Vector2Field label="Size" name="Size" x="32" y="32" binding-path="size" class="unity-base-field__aligned" />
-        <ui:EnumField label="Scroll Direction" type="SqdthUtils._2DLevelZoneSystem.Scripts.LevelZone+ScrollDirection, Assembly-CSharp" name="ScrollDirection" tooltip="Which direction the room will scroll in." binding-path="scrollDirection" class="unity-base-field__aligned" />
+        <ui:EnumField label="Scroll Direction" type="SqdthUtils.LevelZone+ScrollDirection, LevelZoneAssembly" name="ScrollDirection" tooltip="Which direction the room will scroll in." binding-path="scrollDirection" value="FollowPlayer" class="unity-base-field__aligned" />
         <ui:Toggle label="Force Edge Centers" name="ForceEdgeCenters" binding-path="forceEdgeCenters" tooltip="Forces the camera to transition to the edge of the level zone. When false, the choice is left up to the level zone entrances. Alternative behavior results in the camera transitioning to the nearest edge of the level zone." class="unity-base-field__aligned" />
         <ui:Vector2Field label="Camera Offset" name="CameraOffset" binding-path="cameraOffset" style="opacity: 1; display: flex; visibility: visible;" />
     </ui:Foldout>

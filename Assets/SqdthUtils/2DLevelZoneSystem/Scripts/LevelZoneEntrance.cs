@@ -1,6 +1,7 @@
+using SqdthUtils._2DLevelZoneSystem;
 using UnityEngine;
 
-namespace SqdthUtils._2DLevelZoneSystem.Scripts
+namespace SqdthUtils
 {
     [RequireComponent(typeof(BoxCollider2D))]
     public class LevelZoneEntrance : MonoBehaviour, ISnapToBounds
@@ -14,14 +15,17 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         [field: SerializeField] public bool LockToParentBounds { get; protected set; } = true; 
         
         // == Snapping ==
+        [field: SerializeField]
+        public bool Lock { get; set; }
         public Bounds SnappingBounds => owningZone.CameraBounds;
         public Vector2 SnappingOffset => -Size / 2f;
-    
+        
+        // == References ==
         private GameObject playerGO;
         private Transform camTransform;
         private BoxCollider2D bColl;
         private LevelZone owningZone;
-    
+
 
         private void Start()
         {
@@ -88,6 +92,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
 
         protected virtual void TransitionCamera()
         {
+            // Get end position
             Vector3 endPos;
             if (owningZone.scrollDirection ==
                 LevelZone.ScrollDirection.NoScroll)
@@ -101,6 +106,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
                     owningZone.GetNearestEdgePoint(transform.position);
             }
             
+            // Set position 
             endPos.z = camTransform.position.z;
             camTransform.position = endPos;
         }
@@ -124,7 +130,7 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             playerGO.transform.position = endPos;
         }
 
-        private void OnTriggerEnter2D(Collider2D other)
+        protected void OnTriggerEnter2D(Collider2D other)
         {
             // Get and check for player
             if (!other.TryGetComponent(out LevelZonePlayer player)) return;
@@ -172,14 +178,14 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
     
 #if UNITY_EDITOR
 
-        private void OnDrawGizmos()
+        protected void OnDrawGizmos()
         {
             Start();
         
             if (owningZone == null)
             {
                 Gizmos.color = Color.magenta;
-                Gizmos.DrawSphere(transform.position, bColl.size.sqrMagnitude);
+                Gizmos.DrawSphere(transform.position, bColl.size.magnitude);
             }
             else 
             {
@@ -198,19 +204,23 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
                     Gizmos.DrawCube(transform.position, bColl.size);
                 
                     // Draw line to next camera point
+                    float debugLineWidth = 
+                        LevelZoneSettings.Instance.DebugLineWidth;
                     UnityEditor.Handles.color = owningZone.LevelZoneColor;
-                    UnityEditor.Handles.DrawAAPolyLine(LevelZone.DebugLineWidth, pos, transitionPos);
+                    UnityEditor.Handles.DrawAAPolyLine(
+                        debugLineWidth, pos, transitionPos);
                 }
             
                 // Round position to camera bounds
-                if (LockToParentBounds)
+                if (!((ISnapToBounds)this).Lock && // Don't round position when snap lock is on
+                    LockToParentBounds) 
                 {
-                    (this as ISnapToBounds).RoundPositionToBounds(transform);
+                    ((ISnapToBounds)this).RoundPositionToBounds(transform);
                 }
             }
         }
     
-        private void OnDrawGizmosSelected()
+        protected void OnDrawGizmosSelected()
         {
             Start();
 

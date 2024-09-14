@@ -1,9 +1,13 @@
 using UnityEngine;
 
-namespace SqdthUtils._2DLevelZoneSystem.Scripts
+namespace SqdthUtils._2DLevelZoneSystem
 {
+    /// <summary>
+    /// A simple player that inherits from LevelZonePlayer to work with the
+    /// Level Zone system.
+    /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
-    public class ExamplePlayer : LevelZonePlayer
+    internal class SamplePlayer : LevelZonePlayer
     {
         public float moveSpeed = 12f;
 

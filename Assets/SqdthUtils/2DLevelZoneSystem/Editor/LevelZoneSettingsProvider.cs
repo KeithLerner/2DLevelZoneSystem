@@ -1,13 +1,11 @@
 using System.IO;
 using System.Collections.Generic;
-using SqdthUtils._2DLevelZoneSystem.Scripts;
 using UnityEngine;
 using UnityEngine.UIElements;
-
-#if UNITY_EDITOR
 using UnityEditor;
+using Resources = SqdthUtils._2DLevelZoneSystem.Resources;
 
-namespace SqdthUtils._2DLevelZoneSystem.Editor
+namespace SqdthUtils
 {
     public class LevelZoneSettingsProvider : SettingsProvider
     {
@@ -76,5 +74,3 @@ namespace SqdthUtils._2DLevelZoneSystem.Editor
         }
     }
 }
-
-#endif

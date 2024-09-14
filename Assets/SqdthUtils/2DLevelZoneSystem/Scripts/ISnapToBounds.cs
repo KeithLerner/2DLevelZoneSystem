@@ -1,9 +1,13 @@
 using UnityEngine;
 
-namespace SqdthUtils._2DLevelZoneSystem.Scripts
+namespace SqdthUtils
 {
     public interface ISnapToBounds
     {
+        /// <summary>
+        /// When <b>True</b>, this object no longer snaps to bounds
+        /// </summary>
+        public bool Lock { get; set; }
         public Bounds SnappingBounds { get; }
         public Vector2 SnappingOffset { get; }
 

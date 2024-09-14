@@ -1,18 +1,21 @@
-using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-namespace SqdthUtils._2DLevelZoneSystem.Scripts
+namespace SqdthUtils
 {
     public class LevelZonePlayer : MonoBehaviour
     {
-        public Vector2 Size { get; set; } = new Vector2(1, 2);
-        
         [field: SerializeField]
+        [Tooltip("The camera of this player.")]
         public Camera PlayerCamera { get; protected set; }
-        [field: SerializeField] [Tooltip("The speed that the player camera moves at.")]
+        
+        [field: SerializeField] 
+        [Tooltip("The speed that the player camera's transform moves at.")]
         public float CameraSpeed { get; set; } = 45f;
-        public LevelZone CurrentZone { get; set; }
+        
+        /// <summary>
+        /// Level zone the player is currently in. <b>Null</b> if not in a zone.
+        /// </summary>
+        public LevelZone CurrentZone { get; internal set; }
 
         private void Start()
         {

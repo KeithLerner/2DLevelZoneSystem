@@ -1,16 +1,21 @@
-using System;
 using System.Collections.Generic;
+using SqdthUtils._2DLevelZoneSystem;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
-namespace SqdthUtils._2DLevelZoneSystem.Scripts
+namespace SqdthUtils
 {
     [RequireComponent(typeof(BoxCollider2D))]
     public class LevelZone : MonoBehaviour, ISnapToBounds
     {
-        public static Vector2Int TargetAspectRatio { get; set; }
-        public static float TargetOrthographicCameraSize { get; set; }
-        public static float DebugLineWidth { get; set; }
+        // == Settings ==
+        private static Vector2Int TargetAspectRatio =>
+            LevelZoneSettings.Instance.TargetCameraAspectRatio;
+        private static float TargetOrthographicCameraSize =>
+            LevelZoneSettings.Instance.TargetOrthographicCameraSize;
+        private static float DebugLineWidth => 
+            LevelZoneSettings.Instance.DebugLineWidth;
     
         public enum ScrollDirection { Horizontal, Vertical, FollowPlayer, NoScroll }
         [Header("Behavior")]
@@ -47,7 +52,11 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
                 };
             }
         }
-        public Bounds CameraBounds => new Bounds(BColl.bounds.center + (Vector3)CameraOffset, 
+        public Bounds CameraBounds => new Bounds(
+            (BColl != null ? 
+                BColl.bounds.center : 
+                transform.position) + 
+            (Vector3)CameraOffset, 
             scrollDirection switch 
             {
                 ScrollDirection.FollowPlayer => Size + CameraSize,
@@ -56,6 +65,8 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
         );
         
         // == Snapping ==
+        [field: SerializeField] 
+        public bool Lock { get; set; } = false;
         public Bounds SnappingBounds
         {
             get
@@ -134,100 +145,6 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
                    targetPosition.y >= minBounds.y && targetPosition.y <= maxBounds.y;
         }
 
-        /// <summary>
-        /// Get center points on edges of the level zone
-        /// </summary>
-        /// <returns> Array of center points on the edges of the level zone.</returns>
-        public Vector2[] GetEdgeCenters()
-        {
-            if (BColl == null)
-            {
-                BColl = GetComponent<BoxCollider2D>();
-            }
-        
-            // Get min and max bounding position
-            Vector2 pos = transform.position;
-            Vector2 extents = (Vector2)BColl.bounds.extents;
-            Vector2 minBounds = pos - extents;
-            Vector2 maxBounds = pos + extents;
-        
-            return scrollDirection switch
-            {
-                ScrollDirection.Horizontal => new Vector2[]
-                {
-                    new Vector2(minBounds.x, transform.position.y),
-                    new Vector2(maxBounds.x, transform.position.y),
-                },
-                ScrollDirection.Vertical => new Vector2[]
-                {
-                    new Vector2(transform.position.x, minBounds.y),
-                    new Vector2(transform.position.x, maxBounds.y)
-                },
-                _ => new Vector2[]
-                {
-                    new Vector2(minBounds.x, transform.position.y),
-                    new Vector2(maxBounds.x, transform.position.y),
-                    new Vector2(transform.position.x, minBounds.y),
-                    new Vector2(transform.position.x, maxBounds.y)
-                }
-            };
-        }
-
-        /// <summary>
-        /// Get the nearest edge center to a target location. Uses GetEdgeCenters.
-        /// </summary>
-        /// <param name="targetPosition"> The target position to find the nearest edge center to. </param>
-        /// <returns> A Vector2 of the nearest edge center to the targetPosition. </returns>
-        public Vector2 GetNearestEdgeCenter(Vector2 targetPosition)
-        {
-            // Get details from owning level zone
-            Vector2 ownerPos = transform.position;
-
-            // Get center points on edges of the bounding box
-            Vector2[] edgePoints = GetEdgeCenters();
-
-            // Get nearest point
-            Vector2 nearestPoint = ownerPos;
-            float nearestDistance = float.MaxValue;
-            foreach (Vector2 edgePoint in edgePoints)
-            {
-                float distance = Vector2.Distance(
-                    targetPosition, 
-                    edgePoint
-                );
-                if (distance < nearestDistance)
-                {
-                    nearestDistance = distance;
-                    nearestPoint = edgePoint;
-                }
-            }
-
-            // Return nearest point
-            return nearestPoint;
-        }
-
-        public Vector2 GetNearestEdgePoint(Vector2 targetPosition)
-        {
-            if (BColl == null)
-            {
-                BColl = GetComponent<BoxCollider2D>();
-            }
-        
-            // Get min and max bounding position
-            Bounds bCollBounds = BColl.bounds;
-            Vector2 pos = bCollBounds.center;
-            Vector3 extents = bCollBounds.extents;
-            float clampedX;
-            float clampedY;
-        
-            // Clamp the specified point to the boundaries of the box
-            clampedX = Mathf.Clamp(targetPosition.x, pos.x - extents.x, pos.x + extents.x);
-            clampedY = Mathf.Clamp(targetPosition.y, pos.y - extents.y, pos.y + extents.y);
-        
-            // Return the clamped point as the nearest edge point
-            return new Vector2(clampedX, clampedY);
-        }
-
         private void OnTriggerStay2D(Collider2D other)
         {
             // Get player or early return for non-players
@@ -284,12 +201,14 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
 
                     // Update target camera position depending on if this zone
                     // forces edge center transitions
-                    // diagonal offsets can not use camera position as reference
+                    // Diagonal offsets can not use camera position as reference
                     // because the camera lerps away by adding offset to iself 
                     // from its nearest edge center/point
                     targetCamPos = forceEdgeCenters
-                        ? GetNearestEdgeCenter(diagonalOffset ? pPos : cPos)
-                        : GetNearestEdgePoint(diagonalOffset ? pPos : cPos);
+                        ? this.GetNearestEdgeCenter(
+                            diagonalOffset ? pPos : cPos)
+                        : this.GetNearestEdgePoint(
+                            diagonalOffset ? pPos : cPos);
 
                     // Add diagonal offsets back to target position
                     // linear offsets have better camera positioning and don't 
@@ -314,244 +233,19 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
 
 #if UNITY_EDITOR
 
-        #region Perimeter Outline
-        
-        private Bounds[] GetAllFamilialCameraBounds()
-        {
-            // Initialize return list
-            List<Bounds> results = new List<Bounds>{ CameraBounds };
-            
-            // Get all child bounds
-            LevelZone[] family = GetComponentsInChildren<LevelZone>();
-            for (int i = 0; i < family.Length; i++)
-            {
-                // Get level zone camera bounds of i
-                results.Add(family[i].CameraBounds);
-            }
-
-            return results.ToArray();
-        }
-
-        private Vector2[] GetAllFamilialCameraBoundsCorners()
-        {
-            // Initialize return list
-            List<Vector2> results = new List<Vector2>();
-
-            foreach (Bounds bounds in GetAllFamilialCameraBounds())
-            {
-                results.Add(bounds.min); // bottom left
-                results.Add(new Vector2(bounds.min.x, bounds.max.y)); // top left
-                results.Add(bounds.max); // top right
-                results.Add(new Vector2(bounds.max.x, bounds.min.y)); // bottom right
-            }
-
-            return results.ToArray();
-        }
-        
-        private struct Edge
-        {
-            public Vector2 Item1;
-            public Vector2 Item2;
-
-            public Edge(Vector2 start, Vector2 end)
-            {
-                Item1 = start;
-                Item2 = end;
-            }
-        }
-
-        private Vector2[] GetPerimeterPoints2(Bounds[] boundsArray)
-        {
-            // Set up storage for all points (corners and intersections) of
-            // bounds union shape
-            HashSet<Vector2> pointSet = new HashSet<Vector2>();
-            
-            // Get all edges and add valid corners of bounds to the point set
-            List<Edge> horizontalEdges = new List<Edge>();
-            List<Edge> verticalEdges = new List<Edge>();
-            foreach (Bounds bounds in boundsArray)
-            {
-                // Bottom edge
-                horizontalEdges.Add(
-                    new Edge(bounds.min, new Vector2(bounds.max.x, bounds.min.y))
-                ); 
-                // Top edge
-                horizontalEdges.Add(
-                    new Edge(new Vector2(bounds.min.x, bounds.max.y), bounds.max)
-                ); 
-                // Left edge
-                verticalEdges.Add(
-                    new Edge(bounds.min, new Vector2(bounds.min.x, bounds.max.y))
-                ); 
-                // Right edge
-                verticalEdges.Add(
-                    new Edge(new Vector2(bounds.max.x, bounds.min.y), bounds.max)
-                ); 
-                
-                // Get corners
-                bool[] validCorner = new bool[] { true, true, true, true };
-                Vector2[] corners = new Vector2[]
-                {
-                    bounds.min, 
-                    new Vector2(bounds.min.x, bounds.max.y),
-                    bounds.max, 
-                    new Vector2(bounds.max.x, bounds.min.y)
-                };
-                
-                // Check this bound against all other bounds
-                foreach (Bounds boundsToCheckAgainst in boundsArray)
-                {
-                    // Determine if a corner is valid
-                    // A corner is valid if it is not contained in other bounds (exclusive)
-                    for (var i = 0; i < corners.Length; i++)
-                    {
-                        var corner = corners[i];
-                        if (corner.x < boundsToCheckAgainst.max.x &&
-                            corner.x > boundsToCheckAgainst.min.x &&
-                            Mathf.Abs(corner.x - boundsToCheckAgainst.max.x) >
-                            .0001f &&
-                            corner.y < boundsToCheckAgainst.max.y &&
-                            corner.y > boundsToCheckAgainst.min.y &&
-                            Mathf.Abs(corner.y - boundsToCheckAgainst.max.y) >
-                            .0001f)
-                        {
-                            validCorner[i] = false;
-                        }
-                    }
-                }
-                
-                // Add valid corners to the point set
-                if (bounds != CameraBounds &&
-                    validCorner[0] &&
-                    validCorner[1] &&
-                    validCorner[2] &&
-                    validCorner[3])
-                {
-                    Gizmos.color = Color.magenta;
-                    Gizmos.DrawCube(bounds.center, bounds.size);
-                    Gizmos.DrawCube(CameraBounds.center, CameraBounds.size);
-                }
-                for (int i = 0; i < corners.Length; i++)
-                {
-                    if (validCorner[i])
-                    {
-                        pointSet.Add(corners[i]);
-                    }
-                }
-            }
-            
-            // Determine and Add intersecting points to point set
-            foreach (var t in horizontalEdges)
-            {
-                // Get i horizontal edge
-                Edge hEdge = t;
-                
-                // Get Y value of horizontal edge
-                float hY = hEdge.Item1.y;
-                
-                // Check against each vertical edge
-                foreach (var vEdge in verticalEdges)
-                {
-                    // Get X value of vertical edge
-                    float vX = vEdge.Item1.x;
-                    
-                    // If vertical edge exists between horizontal edge points (exclusive)
-                    bool containedX = hEdge.Item1.x < vX && vX < hEdge.Item2.x;
-                    // If horizontal edge exists between vertical edge points (exclusive)
-                    bool containedY = vEdge.Item1.y < hY && hY < vEdge.Item2.y;
-                    
-                    // If intersecting
-                    if (containedX && containedY)
-                    {
-                        // Add nearest point on horizontal edge to point set
-                        pointSet.Add(new Vector2(vX, hY));
-                    }
-                }
-            }
-
-            // Make a list from the point set
-            List<Vector2> pointList = new List<Vector2>();
-            foreach (Vector2 point in pointSet)
-            {
-                pointList.Add(point);
-            }
-
-            return MinimizeDistancePath(pointList).ToArray();
-        }
-
-        private static List<Vector2> MinimizeDistancePath(List<Vector2> points)
-        {
-            List<Vector2> path = new List<Vector2>();
-            HashSet<Vector2> visited = new HashSet<Vector2>();
-
-            // Start from the first point in the list
-            Vector2 currentPoint = points[0];
-            path.Add(currentPoint);
-            visited.Add(currentPoint);
-
-            // Repeat until all points are visited
-            int iterationCount = 0;
-            int maxIterCount = 3;
-            while (visited.Count < points.Count &&
-                   iterationCount < maxIterCount)
-            {
-                Vector2 closestPoint = Vector2.zero;
-                float shortestDistance = Mathf.Infinity;
-
-                // Find the closest unvisited point
-                foreach (Vector2 point in points)
-                {
-                    bool axisAligned = (point - currentPoint).x != 0 ^
-                                       (point - currentPoint).y != 0;
-                    if (!visited.Contains(point) && axisAligned)
-                    {
-                        float distance = Vector2.Distance(currentPoint, point);
-                        if (distance < shortestDistance)
-                        {
-                            closestPoint = point;
-                            shortestDistance = distance;
-                            iterationCount = 0;
-                        }
-                    }
-                }
-
-                // Move to the closest point
-                currentPoint = closestPoint;
-                path.Add(currentPoint);
-                visited.Add(currentPoint);
-                
-                // Count iteration
-                iterationCount++;
-            }
-
-            if (iterationCount >= maxIterCount)
-            {
-                return new List<Vector2>();
-            }
-
-            return path;
-        }
-
-        #endregion
-        
-
-        private void OnGUI()
-        {
-            Start();
-            
-            // Round position to camera bounds
-            if (transform.parent.GetComponent<LevelZone>() != null)
-            {
-                (this as ISnapToBounds).RoundPositionToBounds(transform);
-            }
-        }
-
         private void OnDrawGizmos()
         {
             // Early exit for don't draw room
             if (!DrawLevelZone) return;
 
             Start();
+            
+            // Round position to camera bounds
+            if (!Lock && transform.parent != null && // Don't round position when snap lock is on
+                transform.parent.GetComponent<LevelZone>() != null)
+            {
+                (this as ISnapToBounds).RoundPositionToBounds(transform);
+            }
         
             // Draw level zone area using specified color
             Gizmos.color = LevelZoneColor;
@@ -577,13 +271,14 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
                 default: break;
             }
             
-            // Early exit for zones that aren't at their parental hierarchy
+            // Early exit for zones not at the top of their parental hierarchy
             // The remaining debug visuals are only for the parent most level zone 
-            if (transform.parent.GetComponent<LevelZone>() != null) return;
+            if (transform.parent != null &&
+                transform.parent.GetComponent<LevelZone>() != null) return;
             
             // Get list of perimeter points
-            Vector2[] perimeterPoints = 
-                GetPerimeterPoints2(GetAllFamilialCameraBounds());
+            Vector3[] perimeterPoints = 
+                CameraBounds.GetPerimeterPoints(GetAllFamilialCameraBounds());
 
             // Create list of perimeter edges
             List<Vector3> perimeterEdges = new List<Vector3>();
@@ -601,8 +296,8 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
                 perimeterEdges.Add(b);
                 
                 // Fun extra debug line for those that like seeing the
-                // numbered vertices of the full camera bounds
-                UnityEditor.Handles.Label(a, i.ToString());
+                // numbered vertices of the full camera bounds perimeter
+                //UnityEditor.Handles.Label(a, i.ToString());
             }
             
             // Draw perimeter edges
@@ -617,13 +312,29 @@ namespace SqdthUtils._2DLevelZoneSystem.Scripts
             );
             UnityEditor.Handles.DrawAAPolyLine(DebugLineWidth, 
                 perimeterEdges.ToArray());
+            
+            // Gets all camera bounds in this chain of children
+            Bounds[] GetAllFamilialCameraBounds()
+            {
+                // Initialize return list
+                List<Bounds> results = new List<Bounds>{ CameraBounds };
+            
+                // Get all child bounds
+                LevelZone[] family = GetComponentsInChildren<LevelZone>();
+                for (int i = 0; i < family.Length; i++)
+                {
+                    // Get level zone camera bounds of i
+                    results.Add(family[i].CameraBounds);
+                }
+
+                return results.ToArray();
+            }
         }
 
         /// <summary>
         /// <b> FOR LEVEL ZONE ENTRANCE USE ONLY. </b>
         /// </summary>
-        public void DrawCameraBoundsGizmo() => OnDrawGizmosSelected();
-        
+        internal void DrawCameraBoundsGizmo() => OnDrawGizmosSelected();
         private void OnDrawGizmosSelected()
         {
             // Early exit for don't draw room
