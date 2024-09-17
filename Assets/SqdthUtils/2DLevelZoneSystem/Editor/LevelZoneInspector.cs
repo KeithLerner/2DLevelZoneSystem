@@ -19,7 +19,7 @@ namespace SqdthUtils
 
         private ToolbarToggle snapLockToolbarToggle;
         private EnumField scrollDirectionEnumField;
-        private Vector2Field cameraOffsetVector2Field;
+        private Vector3Field cameraOffsetVector3Field;
         private Button randomizeColorButton;
         private Button addEntranceButton;
         private Button addNestedZoneButton;
@@ -40,7 +40,7 @@ namespace SqdthUtils
             // Get UI elements
             snapLockToolbarToggle = rootElement.Q<ToolbarToggle>("SnapLock");
             scrollDirectionEnumField = rootElement.Q<EnumField>("ScrollDirection");
-            cameraOffsetVector2Field = rootElement.Q<Vector2Field>("CameraOffset");
+            cameraOffsetVector3Field = rootElement.Q<Vector3Field>("CameraOffset");
             randomizeColorButton = rootElement.Q<Button>("RandomizeColor");
             addEntranceButton = rootElement.Q<Button>("AddEntrance");
             addNestedZoneButton = rootElement.Q<Button>("AddNestedZone");
@@ -103,7 +103,7 @@ namespace SqdthUtils
                 // Set size and mode
                 LevelZone newLz = go.GetComponent<LevelZone>();
                 newLz.scrollDirection = LevelZone.ScrollDirection.FollowPlayer;
-                newLz.Size = ((Vector2)targetLevelZone.CameraBounds.size -
+                newLz.Size = (targetLevelZone.CameraBounds.size -
                               targetLevelZone.Size) / 2f;
 
                 // Comment the following line to stop automatically selecting the new child level zone
@@ -118,9 +118,13 @@ namespace SqdthUtils
             LevelZone.ScrollDirection scrollDirection)
         {
             FloatField x = 
-                cameraOffsetVector2Field.Q<FloatField>("unity-x-input");
+                cameraOffsetVector3Field.Q<FloatField>("unity-x-input");
             FloatField y = 
-                cameraOffsetVector2Field.Q<FloatField>("unity-y-input");
+                cameraOffsetVector3Field.Q<FloatField>("unity-y-input");
+            FloatField z = 
+                cameraOffsetVector3Field.Q<FloatField>("unity-z-input");
+            z.style.opacity = .5f;
+            z.isReadOnly = true;
             switch (scrollDirection)
             {
                 case LevelZone.ScrollDirection.Horizontal:
@@ -159,6 +163,9 @@ namespace SqdthUtils
             {
                 targetLevelZone = target as LevelZone;
             }
+            
+            // Early exit if no reference found
+            if (targetLevelZone == null) return;
         
             // Get level zone position 
             Vector3 pos = targetLevelZone.transform.position;

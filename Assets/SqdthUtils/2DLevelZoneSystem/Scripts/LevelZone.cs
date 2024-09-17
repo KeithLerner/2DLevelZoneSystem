@@ -9,45 +9,42 @@ namespace SqdthUtils
     [RequireComponent(typeof(BoxCollider2D))]
     public class LevelZone : MonoBehaviour, ISnapToBounds
     {
-        // == Settings ==
+        // == Settings references ==
         private static Vector2Int TargetAspectRatio =>
             LevelZoneSettings.Instance.TargetCameraAspectRatio;
         private static float TargetOrthographicCameraSize =>
             LevelZoneSettings.Instance.TargetOrthographicCameraSize;
         private static float DebugLineWidth => 
             LevelZoneSettings.Instance.DebugLineWidth;
-    
+
         public enum ScrollDirection { Horizontal, Vertical, FollowPlayer, NoScroll }
+        // == Behavior ==
         [Header("Behavior")]
         [Tooltip("Which direction the room will scroll in.")]
         public ScrollDirection scrollDirection;
         [Tooltip("Offset given to the camera.")]
-        [SerializeField] private Vector2 cameraOffset;
+        [SerializeField] private Vector3 cameraOffset;
 
         [Tooltip("Forces cameras to lock to edge centers when leaving the level zone.")] 
         [SerializeField] private bool forceEdgeCenters = false;
         public bool ForceEdgeCenters => forceEdgeCenters;
     
         // == Sizing ==
-        public Vector2 Size 
-        { 
-            get => size;
-            set => size = value;
-        }
+        public Vector3 Size { get => size; set => size = value; }
         [SerializeField] private Vector2 size = new Vector2(32, 32);
         private float ScreenAspect => (float)TargetAspectRatio.x / TargetAspectRatio.y; 
         float CameraHeight => (Camera.main != null ? 
             Camera.main.orthographicSize : 
             TargetOrthographicCameraSize) * 2;
-        public Vector2 CameraSize => new Vector2(CameraHeight * ScreenAspect, CameraHeight);
-        public Vector2 CameraOffset
+        private Vector3 CameraSize => new Vector3(CameraHeight * ScreenAspect, CameraHeight);
+        private Vector3 CameraOffset
         {
             get
             {
                 return scrollDirection switch
                 {
-                    ScrollDirection.Horizontal   => Vector2.up    * cameraOffset.y,
-                    ScrollDirection.Vertical     => Vector2.right * cameraOffset.x,
+                    ScrollDirection.Horizontal   => Vector3.up    * cameraOffset.y,
+                    ScrollDirection.Vertical     => Vector3.right * cameraOffset.x,
                     _                            =>                 cameraOffset
                 };
             }
@@ -55,8 +52,7 @@ namespace SqdthUtils
         public Bounds CameraBounds => new Bounds(
             (BColl != null ? 
                 BColl.bounds.center : 
-                transform.position) + 
-            (Vector3)CameraOffset, 
+                transform.position) + (Vector3)CameraOffset, 
             scrollDirection switch 
             {
                 ScrollDirection.FollowPlayer => Size + CameraSize,
@@ -84,27 +80,6 @@ namespace SqdthUtils
         }
         public Vector2 SnappingOffset => Size / 2f;
 
-        // == Debug ==
-        private const float ColorAlpha = .4f; 
-        public bool DrawLevelZone => drawZone;
-        [field: Header("Visualization")]
-        [SerializeField] private bool drawZone = true;
-        [SerializeField] private Color overrideLevelZoneColor = new Color(1,1,1,ColorAlpha);
-        public Color LevelZoneColor => 
-            overrideLevelZoneColor != new Color(1,1,1,ColorAlpha) ? 
-                overrideLevelZoneColor :
-                scrollDirection switch
-                {
-                    ScrollDirection.Horizontal => new Color(.2f, .2f, 1, ColorAlpha),
-                    ScrollDirection.Vertical => new Color(1, .2f, .2f, ColorAlpha),
-                    ScrollDirection.FollowPlayer => new Color(.2f, 1, .2f, ColorAlpha),
-                    _ => new Color(.2f, .2f, .2f, ColorAlpha)
-                };
-        public void RandomizeColor()
-        {
-            overrideLevelZoneColor = new Color(Random.value, Random.value, Random.value, ColorAlpha);
-        }
-
         public BoxCollider2D BColl { get; private set; }
         private GameObject playerGO;
         private Transform camTransform;
@@ -127,23 +102,6 @@ namespace SqdthUtils
             if (camTransform == null)
                 camTransform = Camera.main?.transform;
         }
-    
-        /// <summary>
-        /// Check if a position is inside of the level zone.
-        /// </summary>
-        /// <param name="targetPosition"> The position to check. </param>
-        /// <returns></returns>
-        private bool IsInsideLevelZone(Vector3 targetPosition)
-        {
-            // Get min and max bounding position
-            Vector2 pos = transform.position;
-            Vector2 extents = (Vector2)BColl.bounds.extents;
-            Vector2 minBounds = pos - extents;
-            Vector2 maxBounds = pos + extents;
-
-            return targetPosition.x >= minBounds.x && targetPosition.x <= maxBounds.x &&
-                   targetPosition.y >= minBounds.y && targetPosition.y <= maxBounds.y;
-        }
 
         private void OnTriggerStay2D(Collider2D other)
         {
@@ -161,30 +119,30 @@ namespace SqdthUtils
         
             // Get target camera position
             Vector3 cPos = camTransform.position; // camera position
-            Vector2 laPos = transform.position + (Vector3)BColl.offset; // level zone position
-            Vector2 pPos = playerGO.transform.position; // Player position
+            Vector3 laPos = transform.position + (Vector3)BColl.offset; // level zone position
+            Vector3 pPos = playerGO.transform.position; // Player position
             Vector3 targetCamPos = scrollDirection switch // target position for camera based on level zone scroll direction
             {
                 // This level zone scrolls horizontally
                 ScrollDirection.Horizontal => 
-                    new Vector2(pPos.x, laPos.y),
+                    new Vector3(pPos.x, laPos.y),
             
                 // This level zone scrolls vertically
                 ScrollDirection.Vertical => 
-                    new Vector2(laPos.x, pPos.y),
+                    new Vector3(laPos.x, pPos.y),
             
                 ScrollDirection.FollowPlayer =>
-                    new Vector2(pPos.x, pPos.y),
+                    new Vector3(pPos.x, pPos.y),
             
                 // This level zone does not scroll
-                _ => new Vector2(laPos.x, laPos.y)
+                _ => new Vector3(laPos.x, laPos.y)
             };
             
             // Add offset to target camera position
             targetCamPos += (Vector3)CameraOffset;
             
             // Set target camera position if player is not in zone bounds
-            bool isInside = IsInsideLevelZone(pPos);
+            bool isInside = pPos.IsInsideLevelZone(this);
             if (!isInside)
             {
                 // Update player's current zone to null
@@ -232,6 +190,28 @@ namespace SqdthUtils
         }
 
 #if UNITY_EDITOR
+        
+        // == Visual debug details ==
+        private const float ColorAlpha = .4f; 
+        public bool DrawLevelZone => drawZone;
+        [field: Header("Visualization")]
+        [SerializeField] private bool drawZone = true;
+        [SerializeField] private Color overrideLevelZoneColor = new Color(1,1,1,ColorAlpha);
+        public Color LevelZoneColor => 
+            overrideLevelZoneColor != new Color(1,1,1,ColorAlpha) ? 
+                overrideLevelZoneColor :
+                scrollDirection switch
+                {
+                    ScrollDirection.Horizontal => new Color(.2f, .2f, 1, ColorAlpha),
+                    ScrollDirection.Vertical => new Color(1, .2f, .2f, ColorAlpha),
+                    ScrollDirection.FollowPlayer => new Color(.2f, 1, .2f, ColorAlpha),
+                    _ => new Color(.2f, .2f, .2f, ColorAlpha)
+                };
+        
+        internal void RandomizeColor()
+        {
+            overrideLevelZoneColor = new Color(Random.value, Random.value, Random.value, ColorAlpha);
+        }
 
         private void OnDrawGizmos()
         {

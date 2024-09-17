@@ -99,5 +99,22 @@ namespace SqdthUtils._2DLevelZoneSystem
             // Return the clamped point as the nearest edge point
             return new Vector3(clampedX, clampedY, clampedZ);
         }
+    
+        /// <summary>
+        /// Check if a position is inside of the level zone.
+        /// </summary>
+        /// <param name="targetPosition"> The position to check. </param>
+        /// <returns></returns>
+        public static bool IsInsideLevelZone(this Vector3 targetPosition, LevelZone lz)
+        {
+            // Get min and max bounding position
+            Vector3 pos = lz.transform.position;
+            Vector3 extents = lz.BColl.bounds.extents;
+            Vector3 minBounds = pos - extents;
+            Vector3 maxBounds = pos + extents;
+
+            return targetPosition.x >= minBounds.x && targetPosition.x <= maxBounds.x &&
+                   targetPosition.y >= minBounds.y && targetPosition.y <= maxBounds.y;
+        }
     }
 }
