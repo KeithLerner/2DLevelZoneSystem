@@ -12,7 +12,6 @@ namespace SqdthUtils
         [field: SerializeField] public Vector2 Size { get; protected set; } = Vector2.one * 2;
         [field: SerializeField] public Transition TransitionStyle { get; protected set; } = Transition.Camera;
         [field: SerializeField] public bool TransitionToEdgeCenter { get; protected set; } = true; 
-        [field: SerializeField] public bool LockToParentBounds { get; protected set; } = true; 
         
         // == Snapping ==
         [field: SerializeField]
@@ -212,8 +211,7 @@ namespace SqdthUtils
                 }
             
                 // Round position to camera bounds
-                if (!((ISnapToBounds)this).Lock && // Don't round position when snap lock is on
-                    LockToParentBounds) 
+                if (!((ISnapToBounds)this).Lock) // Don't round position when snap lock is on
                 {
                     ((ISnapToBounds)this).RoundPositionToBounds(transform);
                 }

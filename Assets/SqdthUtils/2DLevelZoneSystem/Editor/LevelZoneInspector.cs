@@ -245,12 +245,10 @@ namespace SqdthUtils
                 
                 // Handles based on locking
                 Vector3 handlePos;
-                if (lze.LockToParentBounds)
+                if (lze.Lock)
                 {
                     // Get valid movement axis
-                    Vector3[] dirs = lze.LockToParentBounds ? 
-                        lze.GetValidMovementAxes() : 
-                        new []{ Vector3.up, Vector3.right, };
+                    Vector3[] dirs = lze.GetValidMovementAxes();
 
                     // Draw handles using dirs
                     for (var i = 0; i < dirs.Length; i++)

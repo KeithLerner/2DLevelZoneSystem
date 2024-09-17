@@ -277,7 +277,7 @@ namespace SqdthUtils
                 
                 // Fun extra debug line for those that like seeing the
                 // numbered vertices of the full camera bounds perimeter
-                //UnityEditor.Handles.Label(a, i.ToString());
+                UnityEditor.Handles.Label(a, i.ToString());
             }
             
             // Draw perimeter edges
