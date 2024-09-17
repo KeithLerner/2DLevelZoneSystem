@@ -30,6 +30,8 @@ namespace SqdthUtils
         {
             // Get target as level zone.
             targetLevelZone = target as LevelZone;
+
+            if (targetLevelZone == null) return new VisualElement();
         
             // Create a new VisualElement to be the root of our Inspector UI.
             rootElement = new VisualElement();
@@ -45,6 +47,8 @@ namespace SqdthUtils
             addEntranceButton = rootElement.Q<Button>("AddEntrance");
             addNestedZoneButton = rootElement.Q<Button>("AddNestedZone");
 
+            // Set up snap lock toggle
+            snapLockToolbarToggle.value = targetLevelZone.Lock;
             snapLockToolbarToggle.RegisterCallback<ChangeEvent<bool>>(
                 evt => ((ISnapToBounds)targetLevelZone).Lock = evt.newValue);
             
@@ -176,6 +180,9 @@ namespace SqdthUtils
                 // Skip targeted zone
                 if (lz == targetLevelZone) continue;
                 
+                // Skip snap locked zones
+                if (lz.Lock) return;
+                
                 // Get a level zone entrance position
                 Vector3 lzPos = lz.transform.position;
             
@@ -224,7 +231,7 @@ namespace SqdthUtils
                 }    
 
                 // Set new level zone entrance position to calculated end position 
-                lz.transform.position = endLzPos;
+                lz.transform.position = endLzPos; // THIS LINE CAUSES CRAZY FLIP FLOPPING
             }
             
             // Draw level zone entrance handles

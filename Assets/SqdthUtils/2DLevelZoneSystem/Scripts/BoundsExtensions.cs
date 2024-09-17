@@ -19,6 +19,17 @@ namespace SqdthUtils._2DLevelZoneSystem
                 EndPosition = endPosition;
             }
         }
+
+        internal static List<List<Vector3>> GetPerimeters(this Bounds[] allBounds)
+        {
+            List<List<Vector3>> results = new List<List<Vector3>>();
+            
+            // Get perimeter points in hash sets
+            List<HashSet<Vector3>> perimPoints = new List<HashSet<Vector3>>();
+            
+
+            return results;
+        }
         
         /// <summary>
         /// Get points that make up corners on the perimeter of overlapping

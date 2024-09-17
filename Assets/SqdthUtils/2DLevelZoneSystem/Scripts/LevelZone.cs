@@ -322,7 +322,7 @@ namespace SqdthUtils
 
             Start();
 
-            Gizmos.color = Color.black;
+            Gizmos.color = Color.white;
             Gizmos.DrawWireCube(CameraBounds.center, CameraBounds.size);
         }
     

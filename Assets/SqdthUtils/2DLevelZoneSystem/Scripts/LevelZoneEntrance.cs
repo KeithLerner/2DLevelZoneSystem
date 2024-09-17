@@ -231,7 +231,7 @@ namespace SqdthUtils
             if (owningZone != null)
             { 
                 // Entrance color
-                Gizmos.color = Color.white;
+                Gizmos.color = Color.grey;
             
                 // Draw zone entrance
                 Gizmos.DrawWireCube(transform.position, bColl.size);
