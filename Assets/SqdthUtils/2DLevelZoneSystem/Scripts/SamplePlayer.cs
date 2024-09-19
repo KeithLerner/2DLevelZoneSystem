@@ -9,23 +9,30 @@ namespace SqdthUtils._2DLevelZoneSystem
     [RequireComponent(typeof(Rigidbody2D))]
     internal class SamplePlayer : LevelZonePlayer
     {
+        [Tooltip("Player movement speed.")]
         public float moveSpeed = 12f;
 
-        private Rigidbody2D rb;
+        /// <summary>
+        /// Player RigidBody2D
+        /// </summary>
+        private Rigidbody2D _rb;
 
         // Start is called before the first frame update
-        void Start()
+        private void Start()
         {
-            rb = GetComponent<Rigidbody2D>();
+            _rb = GetComponent<Rigidbody2D>();
         }
 
         // Update is called once per frame
-        void FixedUpdate()
+        private void FixedUpdate()
         {
-            Vector2 movement = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+            Vector2 movement = new Vector2(
+                Input.GetAxis("Horizontal"), 
+                Input.GetAxis("Vertical")
+            );
             movement *= moveSpeed * Time.fixedDeltaTime;
 
-            rb.velocity = movement;
+            _rb.velocity = movement;
         }
     }
 }

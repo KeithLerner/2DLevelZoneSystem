@@ -15,49 +15,49 @@ namespace SqdthUtils
     public class LevelZoneInspector : Editor
     {
         public VisualTreeAsset uxml;
-        private VisualElement rootElement;
+        private VisualElement _rootElement;
 
-        private ToolbarToggle snapLockToolbarToggle;
-        private EnumField scrollDirectionEnumField;
-        private Vector3Field cameraOffsetVector3Field;
-        private Button randomizeColorButton;
-        private Button addEntranceButton;
-        private Button addNestedZoneButton;
+        private ToolbarToggle _snapLockToolbarToggle;
+        private EnumField _scrollDirectionEnumField;
+        private Vector3Field _cameraOffsetVector3Field;
+        private Button _randomizeColorButton;
+        private Button _addEntranceButton;
+        private Button _addNestedZoneButton;
 
-        private LevelZone targetLevelZone;
+        private LevelZone _targetLevelZone;
 
         public override VisualElement CreateInspectorGUI()
         {
             // Get target as level zone.
-            targetLevelZone = target as LevelZone;
+            _targetLevelZone = target as LevelZone;
 
-            if (targetLevelZone == null) return new VisualElement();
+            if (_targetLevelZone == null) return new VisualElement();
         
             // Create a new VisualElement to be the root of our Inspector UI.
-            rootElement = new VisualElement();
+            _rootElement = new VisualElement();
 
             // Load from default reference.
-            uxml.CloneTree(rootElement);
+            uxml.CloneTree(_rootElement);
         
             // Get UI elements
-            snapLockToolbarToggle = rootElement.Q<ToolbarToggle>("SnapLock");
-            scrollDirectionEnumField = rootElement.Q<EnumField>("ScrollDirection");
-            cameraOffsetVector3Field = rootElement.Q<Vector3Field>("CameraOffset");
-            randomizeColorButton = rootElement.Q<Button>("RandomizeColor");
-            addEntranceButton = rootElement.Q<Button>("AddEntrance");
-            addNestedZoneButton = rootElement.Q<Button>("AddNestedZone");
+            _snapLockToolbarToggle = _rootElement.Q<ToolbarToggle>("SnapLock");
+            _scrollDirectionEnumField = _rootElement.Q<EnumField>("ScrollDirection");
+            _cameraOffsetVector3Field = _rootElement.Q<Vector3Field>("CameraOffset");
+            _randomizeColorButton = _rootElement.Q<Button>("RandomizeColor");
+            _addEntranceButton = _rootElement.Q<Button>("AddEntrance");
+            _addNestedZoneButton = _rootElement.Q<Button>("AddNestedZone");
 
             // Set up snap lock toggle
-            snapLockToolbarToggle.value = targetLevelZone.Lock;
-            snapLockToolbarToggle.RegisterCallback<ChangeEvent<bool>>(
-                evt => ((ISnapToBounds)targetLevelZone).Lock = evt.newValue);
+            _snapLockToolbarToggle.value = _targetLevelZone.Lock;
+            _snapLockToolbarToggle.RegisterCallback<ChangeEvent<bool>>(
+                evt => ((ISnapToBounds)_targetLevelZone).Lock = evt.newValue);
             
             // Update the cam offset field's visuals
-            if (targetLevelZone != null)
-                UpdateCameraOffsetField(targetLevelZone.scrollDirection);
+            if (_targetLevelZone != null)
+                UpdateCameraOffsetField(_targetLevelZone.scrollDirection);
             
             // Hide cam offset if not supported by current scroll direction
-            scrollDirectionEnumField.RegisterCallback<ChangeEvent<string>>(evt =>
+            _scrollDirectionEnumField.RegisterCallback<ChangeEvent<string>>(evt =>
             {
                 Enum.TryParse(evt.newValue, out LevelZone.ScrollDirection value);
                 UpdateCameraOffsetField(value);
@@ -65,13 +65,13 @@ namespace SqdthUtils
             
 
             // Link randomize color button to functionality
-            randomizeColorButton.clickable = new Clickable(() =>
+            _randomizeColorButton.clickable = new Clickable(() =>
             {
-                targetLevelZone.RandomizeColor();
+                _targetLevelZone.RandomizeColor();
             });
         
             // Link add level zone add entrance button to functionality
-            addEntranceButton.clickable = new Clickable(() =>
+            _addEntranceButton.clickable = new Clickable(() =>
             {
                 // Create a new level zone
                 GameObject go = new GameObject(
@@ -80,17 +80,17 @@ namespace SqdthUtils
                 );
             
                 // Set it as a child of the target level zone
-                go.transform.SetParent(targetLevelZone.transform);
+                go.transform.SetParent(_targetLevelZone.transform);
             
                 // Give it a random position
-                go.transform.position = Random.insideUnitCircle * targetLevelZone.Size.magnitude;
+                go.transform.position = Random.insideUnitCircle * _targetLevelZone.Size.magnitude;
 
                 // Comment the following line to stop automatically selecting the added level zone entrance
                 Selection.SetActiveObjectWithContext(go, null);
             });
             
             // Link add level zone add entrance button to functionality
-            addNestedZoneButton.clickable = new Clickable(() =>
+            _addNestedZoneButton.clickable = new Clickable(() =>
             {
                 // Create a new level zone
                 GameObject go = new GameObject(
@@ -99,34 +99,34 @@ namespace SqdthUtils
                 );
             
                 // Set it as a child of the target level zone
-                go.transform.SetParent(targetLevelZone.transform);
+                go.transform.SetParent(_targetLevelZone.transform);
             
                 // Give it a random position
-                go.transform.position = Random.insideUnitCircle * targetLevelZone.Size.magnitude;
+                go.transform.position = Random.insideUnitCircle * _targetLevelZone.Size.magnitude;
 
                 // Set size and mode
                 LevelZone newLz = go.GetComponent<LevelZone>();
                 newLz.scrollDirection = LevelZone.ScrollDirection.FollowPlayer;
-                newLz.Size = (targetLevelZone.CameraBounds.size -
-                              targetLevelZone.Size) / 2f;
+                newLz.Size = (_targetLevelZone.CameraBounds.size -
+                              _targetLevelZone.Size) / 2f;
 
                 // Comment the following line to stop automatically selecting the new child level zone
                 Selection.SetActiveObjectWithContext(go, null);
             });
 
             // Return the finished Inspector UI.
-            return rootElement;
+            return _rootElement;
         }
 
         private void UpdateCameraOffsetField(
             LevelZone.ScrollDirection scrollDirection)
         {
             FloatField x = 
-                cameraOffsetVector3Field.Q<FloatField>("unity-x-input");
+                _cameraOffsetVector3Field.Q<FloatField>("unity-x-input");
             FloatField y = 
-                cameraOffsetVector3Field.Q<FloatField>("unity-y-input");
+                _cameraOffsetVector3Field.Q<FloatField>("unity-y-input");
             FloatField z = 
-                cameraOffsetVector3Field.Q<FloatField>("unity-z-input");
+                _cameraOffsetVector3Field.Q<FloatField>("unity-z-input");
             z.style.opacity = .5f;
             z.isReadOnly = true;
             switch (scrollDirection)
@@ -163,22 +163,22 @@ namespace SqdthUtils
         private void OnSceneGUI()
         {
             // Get level zone if null
-            if (targetLevelZone == null)
+            if (_targetLevelZone == null)
             {
-                targetLevelZone = target as LevelZone;
+                _targetLevelZone = target as LevelZone;
             }
             
             // Early exit if no reference found
-            if (targetLevelZone == null) return;
+            if (_targetLevelZone == null) return;
         
             // Get level zone position 
-            Vector3 pos = targetLevelZone.transform.position;
+            Vector3 pos = _targetLevelZone.transform.position;
             
             // Draw level zone children handles
-            foreach (LevelZone lz in targetLevelZone.transform.GetComponentsInChildren<LevelZone>())
+            foreach (LevelZone lz in _targetLevelZone.transform.GetComponentsInChildren<LevelZone>())
             {
                 // Skip targeted zone
-                if (lz == targetLevelZone) continue;
+                if (lz == _targetLevelZone) continue;
                 
                 // Skip snap locked zones
                 if (lz.Lock) return;
@@ -235,7 +235,7 @@ namespace SqdthUtils
             }
             
             // Draw level zone entrance handles
-            foreach (LevelZoneEntrance lze in targetLevelZone.transform.GetComponentsInChildren<LevelZoneEntrance>())
+            foreach (LevelZoneEntrance lze in _targetLevelZone.transform.GetComponentsInChildren<LevelZoneEntrance>())
             {
                 // Get a level zone entrance position
                 Vector3 lzePos = lze.transform.position;

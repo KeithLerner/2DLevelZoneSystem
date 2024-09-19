@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,52 +5,6 @@ namespace SqdthUtils._2DLevelZoneSystem
 {
     public static class PerimeterMath
     {
-        /// <summary>
-        /// Get orthogonal perimeters of a group of bounds.
-        /// </summary>
-        /// <param name="allBounds"> Bounds to get perimeters of. </param>
-        /// <returns> A list of point paths representing different orthogonal
-        /// perimeters based on intersecting subsets of the provided bounds group. </returns>
-        [Obsolete] // Technically in progress not obsolete
-        internal static List<List<Vector3>> GetOrthogonalPerimeters(this Bounds[] allBounds)
-        {
-            List<List<Vector3>> results = new List<List<Vector3>>();
-            
-            // Get bounds groups
-            List<HashSet<Bounds>> boundsGroups = new List<HashSet<Bounds>>();
-            foreach (Bounds allBound in allBounds)
-            {
-                if (boundsGroups.Count == 0)
-                    boundsGroups.Add(new HashSet<Bounds>());
-
-                bool groupFound = false;
-                foreach (var groupSet in boundsGroups)
-                {
-                    Vector3[] corners = allBound.GetCorners();
-                    for (int i = 0; i < 4; i++)
-                    {
-                        if (groupFound) break;
-                        foreach (Bounds groupBound in groupSet)
-                        {
-                            if (groupBound.Contains(corners[i]))
-                            {
-                                groupFound = true;
-                                break;
-                            }
-                        }
-                    }
-                    
-                    if (groupFound)
-                    {
-                        groupSet.Add(allBound);
-                        break;
-                    }
-                }
-            }
-
-            return results;
-        }
-        
         /// <summary>
         /// Get points that make up corners on the perimeter of overlapping
         /// bounds.
@@ -128,6 +81,7 @@ namespace SqdthUtils._2DLevelZoneSystem
                     validCorner[2] &&
                     validCorner[3])
                 {
+#if UNITY_EDITOR                    
                     UnityEditor.Handles.color = Color.yellow;
                     UnityEditor.Handles.Label(corners[0], "Not in camera bounds of parent zone", 
                         new GUIStyle
@@ -136,6 +90,7 @@ namespace SqdthUtils._2DLevelZoneSystem
                             alignment = TextAnchor.UpperRight
                         }
                     );
+#endif                    
                     corners = new []
                     {
                         corners[0],
@@ -144,8 +99,10 @@ namespace SqdthUtils._2DLevelZoneSystem
                         corners[3],
                         corners[0]
                     };
+#if UNITY_EDITOR                    
                     UnityEditor.Handles.DrawAAPolyLine(
                         LevelZoneSettings.Instance.DebugLineWidth, corners);
+#endif                    
                 }
                 // Add valid corners to the point set
                 else for (int i = 0; i < corners.Length; i++)
@@ -248,5 +205,51 @@ namespace SqdthUtils._2DLevelZoneSystem
 
             return path;
         }
+        
+        /*/// <summary>
+        /// Get orthogonal perimeters of a group of bounds.
+        /// </summary>
+        /// <param name="allBounds"> Bounds to get perimeters of. </param>
+        /// <returns> A list of point paths representing different orthogonal
+        /// perimeters based on intersecting subsets of the provided bounds group. </returns>
+        [Obsolete] // Technically in progress not obsolete
+        internal static List<List<Vector3>> GetOrthogonalPerimeters(this Bounds[] allBounds)
+        {
+            List<List<Vector3>> results = new List<List<Vector3>>();
+
+            // Get bounds groups
+            List<HashSet<Bounds>> boundsGroups = new List<HashSet<Bounds>>();
+            foreach (Bounds allBound in allBounds)
+            {
+                if (boundsGroups.Count == 0)
+                    boundsGroups.Add(new HashSet<Bounds>());
+
+                bool groupFound = false;
+                foreach (var groupSet in boundsGroups)
+                {
+                    Vector3[] corners = allBound.GetCorners();
+                    for (int i = 0; i < 4; i++)
+                    {
+                        if (groupFound) break;
+                        foreach (Bounds groupBound in groupSet)
+                        {
+                            if (groupBound.Contains(corners[i]))
+                            {
+                                groupFound = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (groupFound)
+                    {
+                        groupSet.Add(allBound);
+                        break;
+                    }
+                }
+            }
+
+            return results;
+        }*/
     }
 }

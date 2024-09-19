@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using SqdthUtils._2DLevelZoneSystem;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 namespace SqdthUtils
@@ -26,7 +25,7 @@ namespace SqdthUtils
         [SerializeField] private Vector3 cameraOffset;
 
         [Tooltip("Forces cameras to lock to edge centers when leaving the level zone.")] 
-        [SerializeField] private bool forceEdgeCenters = false;
+        [SerializeField] private bool forceEdgeCenters;
         public bool ForceEdgeCenters => forceEdgeCenters;
     
         // == Sizing ==
@@ -50,9 +49,8 @@ namespace SqdthUtils
             }
         }
         public Bounds CameraBounds => new Bounds(
-            (BColl != null ? 
-                BColl.bounds.center : 
-                transform.position) + (Vector3)CameraOffset, 
+            (BColl != null ? BColl.bounds.center : transform.position) + 
+            CameraOffset, 
             scrollDirection switch 
             {
                 ScrollDirection.FollowPlayer => Size + CameraSize,
@@ -62,17 +60,13 @@ namespace SqdthUtils
         
         // == Snapping ==
         [field: SerializeField] 
-        public bool Lock { get; set; } = false;
+        public bool Lock { get; set; }
         public Bounds SnappingBounds
         {
             get
             {
                 if (transform.parent.TryGetComponent(out LevelZone lz))
                 {
-                    if (lz.BColl == null)
-                    {
-                        lz.BColl = lz.GetComponent<BoxCollider2D>();
-                    }
                     return lz.BColl.bounds;
                 }
                 return BColl.bounds;
@@ -80,14 +74,22 @@ namespace SqdthUtils
         }
         public Vector2 SnappingOffset => Size / 2f;
 
-        public BoxCollider2D BColl { get; private set; }
-        private GameObject playerGO;
-        private Transform camTransform;
+        // == Object References ==
+        private BoxCollider2D _bColl;
+        public BoxCollider2D BColl
+        {
+            get
+            {
+                if (_bColl == null)
+                    _bColl = GetComponent<BoxCollider2D>();
+                return _bColl;
+            }
+        }
+        private GameObject _playerGo;
+        private Transform _camTransform;
 
         private void Start()
         {
-            if (BColl == null)
-                BColl = GetComponent<BoxCollider2D>();
             BColl.isTrigger = true;
             BColl.size = Size;
         
@@ -96,11 +98,11 @@ namespace SqdthUtils
             if (BColl.hideFlags != HideFlags.HideInInspector)
                 BColl.hideFlags =  HideFlags.HideInInspector;
         
-            if (playerGO == null)
-                playerGO = GameObject.FindWithTag("Player");
+            if (_playerGo == null)
+                _playerGo = GameObject.FindWithTag("Player");
         
-            if (camTransform == null)
-                camTransform = Camera.main?.transform;
+            if (_camTransform == null && Camera.main != null)
+                _camTransform = Camera.main.transform;
         }
 
         private void OnTriggerStay2D(Collider2D other)
@@ -115,12 +117,12 @@ namespace SqdthUtils
             if (player.CurrentZone != this) return;
 	
             // Update camera transform to this player's transform
-            camTransform = player.PlayerCamera.transform;
+            _camTransform = player.PlayerCamera.transform;
         
             // Get target camera position
-            Vector3 cPos = camTransform.position; // camera position
+            Vector3 cPos = _camTransform.position; // camera position
             Vector3 laPos = transform.position + (Vector3)BColl.offset; // level zone position
-            Vector3 pPos = playerGO.transform.position; // Player position
+            Vector3 pPos = _playerGo.transform.position; // Player position
             Vector3 targetCamPos = scrollDirection switch // target position for camera based on level zone scroll direction
             {
                 // This level zone scrolls horizontally
@@ -139,7 +141,7 @@ namespace SqdthUtils
             };
             
             // Add offset to target camera position
-            targetCamPos += (Vector3)CameraOffset;
+            targetCamPos += CameraOffset;
             
             // Set target camera position if player is not in zone bounds
             bool isInside = pPos.IsInsideLevelZone(this);
@@ -160,7 +162,7 @@ namespace SqdthUtils
                     // Update target camera position depending on if this zone
                     // forces edge center transitions
                     // Diagonal offsets can not use camera position as reference
-                    // because the camera lerps away by adding offset to iself 
+                    // because the camera moves away by adding offset to itself 
                     // from its nearest edge center/point
                     targetCamPos = forceEdgeCenters
                         ? this.GetNearestEdgeCenter(
@@ -174,7 +176,7 @@ namespace SqdthUtils
                     // jitters between neighboring level zones
                     if (diagonalOffset)
                     {
-                        targetCamPos += (Vector3)CameraOffset;
+                        targetCamPos += CameraOffset;
                     }
                 }
             }
@@ -183,7 +185,7 @@ namespace SqdthUtils
             targetCamPos.z = cPos.z;
             
             // Set player's camera position
-            camTransform.position = Vector3.Lerp(
+            _camTransform.position = Vector3.Lerp(
                 cPos, targetCamPos, 
                 Time.fixedDeltaTime * player.CameraSpeed
             );
@@ -229,7 +231,7 @@ namespace SqdthUtils
         
             // Draw level zone area using specified color
             Gizmos.color = LevelZoneColor;
-            Gizmos.DrawCube(transform.position, (Vector3)BColl.size);
+            Gizmos.DrawCube(transform.position, BColl.size);
 
             // Draw camera scroll lines when applicable
             UnityEditor.Handles.color = Color.white;
@@ -238,17 +240,15 @@ namespace SqdthUtils
             {
                 case ScrollDirection.Horizontal:
                     UnityEditor.Handles.DrawAAPolyLine(DebugLineWidth, 
-                        bCollBounds.center + (Vector3)CameraOffset - Vector3.right * bCollBounds.extents.x, 
-                        bCollBounds.center + (Vector3)CameraOffset + Vector3.right * bCollBounds.extents.x);
+                        bCollBounds.center + CameraOffset - Vector3.right * bCollBounds.extents.x, 
+                        bCollBounds.center + CameraOffset + Vector3.right * bCollBounds.extents.x);
                     break;
             
                 case ScrollDirection.Vertical:
                     UnityEditor.Handles.DrawAAPolyLine(DebugLineWidth, 
-                        bCollBounds.center + (Vector3)CameraOffset - Vector3.up * bCollBounds.extents.y, 
-                        bCollBounds.center + (Vector3)CameraOffset + Vector3.up * bCollBounds.extents.y);
+                        bCollBounds.center + CameraOffset - Vector3.up * bCollBounds.extents.y, 
+                        bCollBounds.center + CameraOffset + Vector3.up * bCollBounds.extents.y);
                     break;
-            
-                default: break;
             }
             
             // Early exit for zones not at the top of their parental hierarchy
@@ -277,7 +277,7 @@ namespace SqdthUtils
                 
                 // Fun extra debug line for those that like seeing the
                 // numbered vertices of the full camera bounds perimeter
-                UnityEditor.Handles.Label(a, i.ToString());
+                //UnityEditor.Handles.Label(a, i.ToString());
             }
             
             // Draw perimeter edges
@@ -301,10 +301,10 @@ namespace SqdthUtils
             
                 // Get all child bounds
                 LevelZone[] family = GetComponentsInChildren<LevelZone>();
-                for (int i = 0; i < family.Length; i++)
+                foreach (var child in family)
                 {
                     // Get level zone camera bounds of i
-                    results.Add(family[i].CameraBounds);
+                    results.Add(child.CameraBounds);
                 }
 
                 return results.ToArray();

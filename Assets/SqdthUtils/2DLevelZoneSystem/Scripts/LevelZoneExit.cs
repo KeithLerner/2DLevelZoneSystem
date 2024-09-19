@@ -1,21 +1,23 @@
 using System.Collections;
 using SqdthUtils._2DLevelZoneSystem;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace SqdthUtils
 {
     [RequireComponent(typeof(BoxCollider2D))]
-    public class LevelZoneEntrance : MonoBehaviour, ISnapToBounds
+    public class LevelZoneExit : MonoBehaviour, ISnapToBounds
     {
-        public enum Transition { Full, Player, Camera }
+        public enum Transition { ToNewScene, ToNewSceneAsync }
         
         [field: Header("Bounds")]
         [field: SerializeField] 
         public Vector2 Size { get; protected set; } = Vector2.one * 2;
+        
+        [field: Header("Transition")]
         [field: SerializeField] 
-        public Transition TransitionStyle { get; protected set; } = Transition.Camera;
-        [field: SerializeField] 
-        public bool TransitionToEdgeCenter { get; protected set; } = true; 
+        public Transition TransitionStyle { get; protected set; } = Transition.ToNewScene;
+        [SerializeField] private string transitionSceneName;
         
         // == Snapping ==
         [field: SerializeField]
@@ -25,7 +27,6 @@ namespace SqdthUtils
         
         // == Object References ==
         private GameObject _playerGo;
-        private Transform _camTransform;
         private BoxCollider2D _bColl;
         private BoxCollider2D BColl
         {
@@ -94,48 +95,24 @@ namespace SqdthUtils
             return axes;
         }
 
-        protected virtual IEnumerator TransitionCamera()
+        protected virtual IEnumerator DoTransition()
         {
-            // Get end position
-            Vector3 endPos;
-            if (OwningZone.scrollDirection ==
-                LevelZone.ScrollDirection.NoScroll)
+            switch (TransitionStyle)
             {
-                endPos = OwningZone.CameraBounds.center;
+                case Transition.ToNewScene:
+                    SceneManager.LoadScene(transitionSceneName);
+                    break;
+                
+                case Transition.ToNewSceneAsync:
+                    AsyncOperation asyncLoad = 
+                        SceneManager.LoadSceneAsync(transitionSceneName);
+                    // Wait until the asynchronous scene fully loads
+                    while (!asyncLoad.isDone)
+                    {
+                        yield return null;
+                    }
+                    break;
             }
-            else
-            {
-                endPos = TransitionToEdgeCenter || OwningZone.ForceEdgeCenters ?
-                    OwningZone.GetNearestEdgeCenter(transform.position) :
-                    OwningZone.GetNearestEdgePoint(transform.position);
-            }
-            
-            // Set position 
-            endPos.z = _camTransform.position.z;
-            _camTransform.position = endPos;
-            
-            yield return null;
-        }
-
-        protected virtual IEnumerator TransitionPlayer()
-        {
-            Vector3 endPos;
-            if (OwningZone.scrollDirection ==
-                LevelZone.ScrollDirection.NoScroll)
-            {
-                endPos = OwningZone.CameraBounds.center;
-            }
-            else
-            {
-                endPos = TransitionToEdgeCenter || OwningZone.ForceEdgeCenters ?
-                    OwningZone.GetNearestEdgeCenter(transform.position) :
-                    OwningZone.GetNearestEdgePoint(transform.position);
-            }
-            
-            endPos.z = OwningZone.transform.position.z;
-            _playerGo.transform.position = endPos;
-
-            yield return null;
         }
 
         protected void OnTriggerEnter2D(Collider2D other)
@@ -146,23 +123,24 @@ namespace SqdthUtils
             // Get player's GameObject
             _playerGo = player.gameObject;
         
-            // Get player's camera's transform
-            _camTransform = player.PlayerCamera.transform;
-        
-            // Only apply transition if velocity is in direction of room (entering room)
-            // Relies on player using a rigidbody, ignored if player doesn't use a rigidbody
+            // Only apply transition if velocity is in the opposite direction of
+            // room (exiting room).
+            // Relies on player using a rigidbody, ignored if player doesn't use
+            // a rigidbody
             Rigidbody2D rb = _playerGo.GetComponent<Rigidbody2D>();
             if (rb != null)
             {
                 if (Vector3.Dot(rb.velocity,
-                        OwningZone.transform.position - rb.transform.position) <= 0)
+                        rb.transform.position - OwningZone.transform.position) <= 0)
                 {
                     return;
                 }
             }
 
-            // Only apply transition if velocity is in direction of room (entering room)
-            // Relies on player using a character controller, ignored if player doesn't use a character controller
+            // Only apply transition if velocity is in the opposite direction of
+            // room (exiting room).
+            // Relies on player using a character controller, ignored if player
+            // doesn't use a character controller
             CharacterController cc = _playerGo.GetComponent<CharacterController>();
             if (cc != null)
             {
@@ -173,13 +151,8 @@ namespace SqdthUtils
                 }
             }
         
-            // Transition camera
-            if (TransitionStyle is Transition.Camera or Transition.Full)
-                StartCoroutine(nameof(TransitionCamera));
-
-            // Transition player
-            if (TransitionStyle is Transition.Player or Transition.Full)
-                StartCoroutine(nameof(TransitionPlayer));
+            // Transition
+            StartCoroutine(nameof(DoTransition));
         }
     
 #if UNITY_EDITOR
@@ -190,10 +163,7 @@ namespace SqdthUtils
             if (OwningZone.DrawLevelZone)
             {
                 Vector3 pos = transform.position;
-                Vector3 transitionPos = 
-                    TransitionToEdgeCenter || OwningZone.ForceEdgeCenters ? 
-                        OwningZone.GetNearestEdgeCenter(pos) :
-                        OwningZone.GetNearestEdgePoint(pos);
+                Vector3 transitionPos = OwningZone.GetNearestEdgePoint(pos);
                 transitionPos.z = OwningZone.transform.position.z;
             
                 // Draw zone entrance

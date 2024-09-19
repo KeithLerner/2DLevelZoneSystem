@@ -42,18 +42,21 @@ namespace SqdthUtils
             // Try getting settings asset
             string path = Resources.KLevelZoneSettingsAssetPath;
             LevelZoneSettings settings = 
-                AssetDatabase.LoadAssetAtPath<LevelZoneSettings>(path);
+                UnityEngine.Resources.Load<LevelZoneSettings>(path);
             
             // Create settings if no settings found
             if (settings == null)
             {
-                // Set hide flags
-                settings.hideFlags = HideFlags.HideInHierarchy;
-            
-                // Set default settings values
+                // Create new settings
                 settings = CreateInstance<LevelZoneSettings>();
+                
+#if UNITY_EDITOR
+                
+                // Save asset to project hierarchy
                 AssetDatabase.CreateAsset(settings, path);
                 AssetDatabase.SaveAssets();
+                
+#endif                
                 
                 // Debug about no settings found
                 Debug.LogWarning(
@@ -82,9 +85,9 @@ namespace SqdthUtils._2DLevelZoneSystem
 {
     public static class Resources
     {
-        public const string KLevelZoneSettingsFolderPath =
+        private const string KLevelZoneSettingsFolderPath =
             "Assets/SqdthUtils/2DLevelZoneSystem/Resources/";
-        public const string KLevelZoneSettingsAssetPath =
+        internal const string KLevelZoneSettingsAssetPath =
             KLevelZoneSettingsFolderPath + "LevelZoneSettings.asset";
     }
 }

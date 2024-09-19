@@ -8,7 +8,7 @@ namespace SqdthUtils._2DLevelZoneSystem
         /// Get center points on edges of the level zone
         /// </summary>
         /// <returns> Array of center points on the edges of the level zone.</returns>
-        internal static Vector3[] GetEdgeCenters(this LevelZone lz)
+        private static Vector3[] GetEdgeCenters(this LevelZone lz)
         {
             // Get level zone data
             Bounds bounds = lz.BColl.bounds;
@@ -99,12 +99,16 @@ namespace SqdthUtils._2DLevelZoneSystem
             // Return the clamped point as the nearest edge point
             return new Vector3(clampedX, clampedY, clampedZ);
         }
-    
+
         /// <summary>
-        /// Check if a position is inside of the level zone.
+        /// Check if a position is inside of the level zone. A level zone is
+        /// defined by its boundaries, meaning that points on the edge of a
+        /// level zone are counted as inside that level zone.
         /// </summary>
         /// <param name="targetPosition"> The position to check. </param>
-        /// <returns></returns>
+        /// <param name="lz"> The level zone to check this position against. </param>
+        /// <returns> <b>True</b> when point is inclusively inside a level zone,
+        /// <b>False</b> otherwise. </returns>
         public static bool IsInsideLevelZone(this Vector3 targetPosition, LevelZone lz)
         {
             // Get min and max bounding position
