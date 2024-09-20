@@ -75,8 +75,8 @@ namespace SqdthUtils
             {
                 // Create a new level zone
                 GameObject go = new GameObject(
-                    "new LevelZoneEntrance",
-                    typeof(LevelZoneEntrance)
+                    "new LevelZoneTransition",
+                    typeof(LevelZoneTransition)
                 );
             
                 // Set it as a child of the target level zone
@@ -235,7 +235,7 @@ namespace SqdthUtils
             }
             
             // Draw level zone entrance handles
-            foreach (LevelZoneEntrance lze in _targetLevelZone.transform.GetComponentsInChildren<LevelZoneEntrance>())
+            foreach (LevelZoneTransition lze in _targetLevelZone.transform.GetComponentsInChildren<LevelZoneTransition>())
             {
                 // Get a level zone entrance position
                 Vector3 lzePos = lze.transform.position;

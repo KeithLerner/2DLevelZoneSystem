@@ -41,8 +41,13 @@ namespace SqdthUtils
         {
             // Try getting settings asset
             string path = Resources.KLevelZoneSettingsAssetPath;
-            LevelZoneSettings settings = 
+            LevelZoneSettings settings =
+
+#if UNITY_EDITOR
+                AssetDatabase.LoadAssetAtPath<LevelZoneSettings>(path); 
+#else
                 UnityEngine.Resources.Load<LevelZoneSettings>(path);
+#endif
             
             // Create settings if no settings found
             if (settings == null)
@@ -62,7 +67,7 @@ namespace SqdthUtils
                 Debug.LogWarning(
                     "[2D Level Zone System Settings] " +
                      "Generating new 2D Level Zone System Settings.\n" +
-                     $"Located at {Resources.KLevelZoneSettingsAssetPath}"
+                     $"Located at {path}"
                 );
             }
             

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2657720708397922736}
   - component: {fileID: 6065821559136000288}
   m_Layer: 2
-  m_Name: LevelZoneEntrance (Wide)
+  m_Name: LevelZoneTransition (Wide)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
