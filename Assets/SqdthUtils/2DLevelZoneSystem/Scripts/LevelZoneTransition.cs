@@ -2,13 +2,14 @@ using System.Collections;
 using SqdthUtils._2DLevelZoneSystem;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
 namespace SqdthUtils
 {
     [RequireComponent(typeof(BoxCollider2D))]
     public class LevelZoneTransition : MonoBehaviour, ISnapToBounds
     {
-        public enum Transition { Full, Player, Camera, Scene, SceneAsync }
+        public enum Transition { Player, Camera, CameraAndPlayer, Scene, SceneAsync }
         
         [field: Header("Bounds")]
         [field: SerializeField] 
@@ -30,7 +31,8 @@ namespace SqdthUtils
         private GameObject _playerGo;
         private Transform _camTransform;
         private BoxCollider2D _bColl;
-        private BoxCollider2D BColl
+
+        internal BoxCollider2D BColl
         {
             get
             {
@@ -40,7 +42,8 @@ namespace SqdthUtils
             }
         }
         private LevelZone _owningZone;
-        private LevelZone OwningZone
+
+        internal LevelZone OwningZone
         {
             get
             {
@@ -199,7 +202,7 @@ namespace SqdthUtils
                     StartCoroutine(nameof(TransitionPlayer));
                     break;
                 
-                case Transition.Full:
+                case Transition.CameraAndPlayer:
                     StartCoroutine(nameof(TransitionCamera));
                     StartCoroutine(nameof(TransitionPlayer));
                     break;
@@ -216,6 +219,26 @@ namespace SqdthUtils
         }
     
 #if UNITY_EDITOR
+        
+        // == Visual debug details ==
+        private const float ColorAlpha = .4f; 
+        public bool DrawLevelZoneTransition => drawZoneTransition;
+        [Header("Visualization")]
+        [SerializeField] private bool drawZoneTransition = true;
+        [SerializeField] private Color overrideLevelZoneColor = new Color(1,1,1,ColorAlpha);
+        public Color LevelZoneTransitionColor => 
+            overrideLevelZoneColor != new Color(1,1,1,ColorAlpha) ? 
+                overrideLevelZoneColor :
+                OwningZone.scrollDirection switch
+                {
+                    LevelZone.ScrollDirection.Horizontal => 
+                        new Color(.2f, .2f, 1, ColorAlpha),
+                    LevelZone.ScrollDirection.Vertical => 
+                        new Color(1, .2f, .2f, ColorAlpha),
+                    LevelZone.ScrollDirection.FollowPlayer => 
+                        new Color(.2f, 1, .2f, ColorAlpha),
+                    _ => new Color(.2f, .2f, .2f, ColorAlpha)
+                };
 
         protected void OnDrawGizmos()
         {
@@ -251,16 +274,16 @@ namespace SqdthUtils
         protected void OnDrawGizmosSelected()
         {
             // Early exit for don't draw level zone
-            if (!OwningZone.DrawLevelZone) return;
+            if (!OwningZone.DrawLevelZone || !DrawLevelZoneTransition) return;
         
             // Entrance color
-            Gizmos.color = Color.grey;
+            Gizmos.color = LevelZoneTransitionColor;
         
             // Draw zone entrance
             Gizmos.DrawWireCube(transform.position, BColl.size);
 
             // Call parent's OnDrawGizmoSelected
-            transform.parent.GetComponent<LevelZone>().DrawCameraBoundsGizmo();
+            //transform.parent.GetComponent<LevelZone>().DrawCameraBoundsGizmo();
         }
     
 #endif

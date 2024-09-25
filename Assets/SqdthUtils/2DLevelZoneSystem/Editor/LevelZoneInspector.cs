@@ -160,22 +160,52 @@ namespace SqdthUtils
             }
         }
 
-        private void OnSceneGUI()
+        private void DrawZone()
         {
-            // Get level zone if null
-            if (_targetLevelZone == null)
-            {
-                _targetLevelZone = target as LevelZone;
-            }
+            Handles.color = Color.white;
+            Handles.DrawWireCube(_targetLevelZone.transform.position,
+                _targetLevelZone.CameraBounds.size);
             
-            // Early exit if no reference found
-            if (_targetLevelZone == null) return;
-        
+            // Draw camera scroll lines when applicable
+            Handles.color = Color.white;
+            Bounds bCollBounds = _targetLevelZone.BColl.bounds;
+            Vector3 pointA, pointB;
+            switch (_targetLevelZone.scrollDirection)
+            {
+                case LevelZone.ScrollDirection.Horizontal:
+                    pointA = bCollBounds.center +
+                             _targetLevelZone.CameraOffset -
+                             Vector3.right * bCollBounds.extents.x;
+                    pointB = bCollBounds.center +
+                             _targetLevelZone.CameraOffset +
+                             Vector3.right * bCollBounds.extents.x;
+                    Handles.DrawAAPolyLine(
+                        LevelZoneSettings.Instance.DebugLineWidth, 
+                        pointA, pointB);
+                    break;
+            
+                case LevelZone.ScrollDirection.Vertical:
+                    pointA = bCollBounds.center +
+                             _targetLevelZone.CameraOffset -
+                             Vector3.up * bCollBounds.extents.y;
+                    pointB = bCollBounds.center +
+                             _targetLevelZone.CameraOffset +
+                             Vector3.up * bCollBounds.extents.y;
+                    Handles.DrawAAPolyLine(
+                        LevelZoneSettings.Instance.DebugLineWidth, 
+                        pointA, pointB);
+                    break;
+            }
+        }
+
+        private void DrawChildrenLevelZoneHandles(
+            LevelZone[] zones)
+        {
             // Get level zone position 
             Vector3 pos = _targetLevelZone.transform.position;
             
             // Draw level zone children handles
-            foreach (LevelZone lz in _targetLevelZone.transform.GetComponentsInChildren<LevelZone>())
+            foreach (LevelZone lz in zones)
             {
                 // Skip targeted zone
                 if (lz == _targetLevelZone) continue;
@@ -233,9 +263,16 @@ namespace SqdthUtils
                 // Set new level zone entrance position to calculated end position 
                 lz.transform.position = endLzPos; // THIS LINE CAUSES CRAZY FLIP FLOPPING
             }
+        }
+
+        private void DrawChildrenLevelTransitionHandles(
+            LevelZoneTransition[] transitions)
+        {
+            // Get level zone position 
+            Vector3 pos = _targetLevelZone.transform.position;
             
             // Draw level zone entrance handles
-            foreach (LevelZoneTransition lze in _targetLevelZone.transform.GetComponentsInChildren<LevelZoneTransition>())
+            foreach (LevelZoneTransition lze in transitions)
             {
                 // Get a level zone entrance position
                 Vector3 lzePos = lze.transform.position;
@@ -298,6 +335,29 @@ namespace SqdthUtils
                 // Set new level zone entrance position to calculated end position 
                 lze.transform.position = endLzePos;
             }
+        }
+
+        private void OnSceneGUI()
+        {
+            // Get level zone if null
+            if (_targetLevelZone == null)
+            {
+                _targetLevelZone = target as LevelZone;
+            }
+            
+            // Early exit if no reference found
+            if (_targetLevelZone == null) return;
+            
+            // Draw target zone
+            DrawZone();
+            
+            // Draw children zones
+            DrawChildrenLevelZoneHandles(
+                _targetLevelZone.GetComponentsInChildren<LevelZone>());
+
+            // Draw children transitions
+            DrawChildrenLevelTransitionHandles(
+                _targetLevelZone.GetComponentsInChildren<LevelZoneTransition>());
         }
     }
 }

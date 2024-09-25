@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <uie:Toolbar>
+        <uie:ToolbarToggle focusable="false" label="Snap Lock" name="SnapLock" tooltip="When snap lock is enabled, this will not snap to bounds of a parent" style="flex-wrap: wrap;" />
+    </uie:Toolbar>
+    <ui:Foldout text="Behavior" name="BehaviorFoldout" binding-path="m_BehaviorFoldout" class="unity-base-field__aligned">
+        <ui:Vector2Field label="Size" name="Size" x="32" y="32" binding-path="size" class="unity-base-field__aligned" />
+        <ui:EnumField label="Transition Style" type="SqdthUtils.LevelZoneTransition+Transition, LevelZoneAssembly" name="TransitionType" tooltip="Which direction the room will scroll in." binding-path="transitionType" value="CameraAndPlayer" class="unity-base-field__aligned" />
+        <ui:Toggle label="Transition to Edge Centers" name="TransitionToEdgeCenters" binding-path="transitionToEdgeCenters" tooltip="Forces the camera to transition to the edge of the level zone. When false, the choice is left up to the level zone entrances. Alternative behavior results in the camera transitioning to the nearest edge of the level zone." class="unity-base-field__aligned" />
+        <ui:TextField label="Transition Scene Name" name="TransitionSceneName" binding-path="transitionSceneName" />
+    </ui:Foldout>
+    <ui:Foldout text="Debug" name="DebugFoldout" binding-path="m_DebugFoldout" class="unity-base-field__aligned">
+        <ui:Toggle label="Draw Zone Transition" name="DrawZoneTransition" value="true" tooltip="Draws debug visuals to the scene view." binding-path="drawZoneTransition" class="unity-base-field__aligned" />
+        <uie:ColorField label="Level Zone Transition Color" value="#FFFFFF40" name="LevelZoneTransitionColor" show-alpha="false" tooltip="Color of the level zone transition area. Will revert to default values at FFFFFF." binding-path="overrideLevelZoneColor" class="unity-base-field__aligned" />
+    </ui:Foldout>
+</ui:UXML>

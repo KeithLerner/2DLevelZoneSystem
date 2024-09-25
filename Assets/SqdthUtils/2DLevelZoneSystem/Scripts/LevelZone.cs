@@ -8,14 +8,6 @@ namespace SqdthUtils
     [RequireComponent(typeof(BoxCollider2D))]
     public class LevelZone : MonoBehaviour, ISnapToBounds
     {
-        // == Settings references ==
-        private static Vector2Int TargetAspectRatio =>
-            LevelZoneSettings.Instance.TargetCameraAspectRatio;
-        private static float TargetOrthographicCameraSize =>
-            LevelZoneSettings.Instance.TargetOrthographicCameraSize;
-        private static float DebugLineWidth => 
-            LevelZoneSettings.Instance.DebugLineWidth;
-
         public enum ScrollDirection { Horizontal, Vertical, FollowPlayer, NoScroll }
         // == Behavior ==
         [Header("Behavior")]
@@ -31,12 +23,14 @@ namespace SqdthUtils
         // == Sizing ==
         public Vector3 Size { get => size; set => size = value; }
         [SerializeField] private Vector2 size = new Vector2(32, 32);
-        private float ScreenAspect => (float)TargetAspectRatio.x / TargetAspectRatio.y; 
+        private float ScreenAspect => 
+            (float)LevelZoneSettings.Instance.TargetCameraAspectRatio.x / 
+                   LevelZoneSettings.Instance.TargetCameraAspectRatio.y; 
         float CameraHeight => (Camera.main != null ? 
             Camera.main.orthographicSize : 
-            TargetOrthographicCameraSize) * 2;
+            LevelZoneSettings.Instance.TargetOrthographicCameraSize) * 2;
         private Vector3 CameraSize => new Vector3(CameraHeight * ScreenAspect, CameraHeight);
-        private Vector3 CameraOffset
+        internal Vector3 CameraOffset
         {
             get
             {
@@ -218,7 +212,7 @@ namespace SqdthUtils
         private void OnDrawGizmos()
         {
             // Early exit for don't draw room
-            if (!DrawLevelZone) return;
+            if (!DrawLevelZone || Application.isPlaying) return;
 
             Start();
             
@@ -228,28 +222,10 @@ namespace SqdthUtils
             {
                 (this as ISnapToBounds).RoundPositionToBounds(transform);
             }
-        
+            
             // Draw level zone area using specified color
             Gizmos.color = LevelZoneColor;
-            Gizmos.DrawCube(transform.position, BColl.size);
-
-            // Draw camera scroll lines when applicable
-            UnityEditor.Handles.color = Color.white;
-            Bounds bCollBounds = BColl.bounds;
-            switch (scrollDirection)
-            {
-                case ScrollDirection.Horizontal:
-                    UnityEditor.Handles.DrawAAPolyLine(DebugLineWidth, 
-                        bCollBounds.center + CameraOffset - Vector3.right * bCollBounds.extents.x, 
-                        bCollBounds.center + CameraOffset + Vector3.right * bCollBounds.extents.x);
-                    break;
-            
-                case ScrollDirection.Vertical:
-                    UnityEditor.Handles.DrawAAPolyLine(DebugLineWidth, 
-                        bCollBounds.center + CameraOffset - Vector3.up * bCollBounds.extents.y, 
-                        bCollBounds.center + CameraOffset + Vector3.up * bCollBounds.extents.y);
-                    break;
-            }
+            Gizmos.DrawCube(BColl.bounds.center, BColl.size);
             
             // Early exit for zones not at the top of their parental hierarchy
             // The remaining debug visuals are only for the parent most level zone 
@@ -290,7 +266,8 @@ namespace SqdthUtils
                     alignment = TextAnchor.UpperRight
                 }
             );
-            UnityEditor.Handles.DrawAAPolyLine(DebugLineWidth, 
+            UnityEditor.Handles.DrawAAPolyLine(
+                LevelZoneSettings.Instance.DebugLineWidth, 
                 perimeterEdges.ToArray());
             
             // Gets all camera bounds in this chain of children
@@ -309,21 +286,6 @@ namespace SqdthUtils
 
                 return results.ToArray();
             }
-        }
-
-        /// <summary>
-        /// <b> FOR LEVEL ZONE ENTRANCE USE ONLY. </b>
-        /// </summary>
-        internal void DrawCameraBoundsGizmo() => OnDrawGizmosSelected();
-        private void OnDrawGizmosSelected()
-        {
-            // Early exit for don't draw room
-            if (!DrawLevelZone) return;
-
-            Start();
-
-            Gizmos.color = Color.white;
-            Gizmos.DrawWireCube(CameraBounds.center, CameraBounds.size);
         }
     
 #endif
